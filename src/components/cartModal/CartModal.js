@@ -60,22 +60,6 @@ const CartModal = (props) => {
               </button>
             </div>
             <div className="modal-body osahan-my-cart">
-              {/* <a
-                href="#"
-                className="text-dark d-flex align-items-center mb-3"
-                data-toggle="modal"
-                data-target="#myaddressModal"
-              >
-                <div>
-                  <p className="mb-0 text-danger">Delivered to</p>
-                  <p className="mb-0 small">300 Post Street San Francico, CA</p>
-                </div>
-                <div className="ml-auto">
-                  <p className="mb-0 text-info">
-                    Edit<i className="mdi h6 m-0 mdi-chevron-right"></i>
-                  </p>
-                </div>
-              </a> */}
               <div className="details-page pt-3 osahan-my-cart-item">
                 {cartItems.items && cartItems.items.map((item)=> 
                 (<div className="d-flex align-items-center mb-3">
@@ -116,6 +100,28 @@ const CartModal = (props) => {
                     <i className="mdi mdi-plus mr-2" ></i> Add more items
                   </a>
                 </div>
+                <div className="text-center">
+                {cartItems.cartTotal != 0 ?
+                   (<table className="table table-borderless text-dark">
+                      <tr>
+                        <th>
+                        SubTotal:
+                        </th>
+                        <th>
+                        ₹ {cartItems.cartTotal}
+                        </th>
+                      </tr>
+                      <tr>
+                        <th>
+                        GST:
+                        </th>
+                        <th>
+                        ₹ {cartItems.cartTotal *5/100}
+                        </th>
+                      </tr>
+                   </table>) : null
+                    }
+                </div>
               </div>
             </div>
             <div className="modal-footer justify-content-start osahan-my-cart-footer">
@@ -126,7 +132,7 @@ const CartModal = (props) => {
                     className="btn btn-primary btn-block"
                     onClick={handleCheckout}
                   >                    
-                      {`Checkout (₹ ${cartItems.cartTotal})`}
+                      {`Checkout (₹ ${parseFloat(cartItems.cartTotal) + parseFloat(cartItems.cartTotal *5/100)})`}
                   </button>)
                   : null
                  }

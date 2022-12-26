@@ -3,10 +3,13 @@ import React, {useEffect, useState} from "react";
 import { getProduct } from "../../../services/product";
 import { getCategory } from "../../../services/category";
 import { img_path } from "../../../config";
+import AddProductDialog from "./AddProductDialog";
 const Products = () => {
     const [data, setData] = useState()
     const [category, setCategory] = useState()
-    useEffect(()=>{
+    const [open,setOpen] = useState(false)
+    const [count, setCount] = useState(0)
+    useEffect(()=>{     
          getProduct.then((res)=>{
             setData(res.data.data)
          }).catch((err)=>{
@@ -18,11 +21,17 @@ const Products = () => {
             console.log(error)
          })
     },[])
+    const handleProductAdd = () => {
+        setOpen(true) 
+        setCount(count + 1)   
+    }
     return (
         <>
-          <div className="container">
+          <AddProductDialog status={open} count={count}/>
+          <div className="container" style={{marginTop: '80px'}}>
+          <Button className="float-right" color="primary" variant="contained" onClick={handleProductAdd} size="small">Add Product</Button>
               <TableContainer>
-                  <Table sx={{marginTop: '80px'}}>
+                  <Table>
                      <TableHead>
                          <TableRow>
                             <TableCell>

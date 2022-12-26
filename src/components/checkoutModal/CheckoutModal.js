@@ -68,7 +68,6 @@ const CheckoutModal = (props) => {
     }
     const handlePayment = () => {
      document.getElementById('codForm').submit()
-     
     }
 
   return (
@@ -202,7 +201,7 @@ const CheckoutModal = (props) => {
             </div>
             <div className="modal-footer justify-content-start">
               <a onClick={codStatus ? formik.handleSubmit : null} className="btn btn-primary btn-block text-white">
-                Confirm payment (₹ {cartItems.cartTotal})
+                Confirm payment (₹ {parseFloat(cartItems.cartTotal) + parseFloat(cartItems.cartTotal * 5/100)})
               </a>
             </div>
           </div>

@@ -6,22 +6,37 @@ import axios from "axios";
 import PrintIcon from '@mui/icons-material/Print';
 import Invoice from "../../Invoice/Invoice";
 import { useRef } from "react";
-import { useReactToPrint } from "react-to-print";
+import ReactToPrint,{ useReactToPrint } from "react-to-print";
 import "./Order.css"
+import BackDrop from "../../backDrop/BackDrop";
+import ThermalPrint from "../../thermalPrint/ThermalPrint";
 const Order = () => {
-    const cartItems = useCart()
+    
+    const [open, setOpen] =useState(false)
     const [order, setOrder] = useState()
     const [content, setContent] = useState(null)
     const componentRef = useRef(null)
-     const sendData = (item) => {
-        console.log(item)
-        setContent(item)
-     }
-    const handlePrint =  useReactToPrint({
+    const cartItems = useCart()
+    const ready = useReactToPrint({
         content: () => componentRef.current,
         documentTitle:  "Invoice",
-        onAfterPrint: () => console.log("print success"),
+        onAfterPrint: (item) => setOpen(false),
     })
+     const sendData = (item) => {
+        setOpen(true)
+        setContent(item)       
+        setTimeout(()=>{
+            ready()
+        },500)
+     }
+    // const handlePrint = useReactToPrint({
+    //     content: () => componentRef.current,
+    //     documentTitle:  "Invoice",
+    //     onAfterPrint: () => console.log("print success"),
+    // })
+    useEffect(()=>{
+        //console.log(handlePrint())
+    },[])
 
     useEffect(()=>{
       axios.get(`${url}/order`).then((res)=>{
@@ -34,9 +49,11 @@ const Order = () => {
     },[cartItems.isEmpty])
     return (
         <>
-         <div ref={componentRef} className="media">
-            <Invoice content={content}/>
-         </div>
+        <BackDrop status={open}/>
+       <div ref={componentRef} className="media">
+          <Invoice  content={content}/>
+       </div>
+       <ThermalPrint/>
           <TableContainer > 
             <Table style={{marginTop: '80px'}}>   
              <TableHead>
@@ -70,7 +87,7 @@ const Order = () => {
              <TableBody>
              
                 {order && order.map((item)=>               
-                (<TableRow>
+                (<TableRow key={item.id}>
                     <TableCell>
                         #{item.id}
                     </TableCell>
@@ -81,9 +98,9 @@ const Order = () => {
                         {item.customer_name}
                     </TableCell>
                     <TableCell>
-                        {JSON.parse(item.items).map((place_item)=>  
+                        {JSON.parse(item.items).map((place_item ,id)=>  
                                                   <>
-                                                    <p>{place_item.product_name} × <span className="text-danger">({place_item.quantity})</span></p>
+                                                    <p key={id}>{place_item.product_name} × <span className="text-danger">({place_item.quantity})</span></p>
                                                   {/* `${place_item.product_name}(${place_item.quantity}),` */}
                                                   </>
                                     )}
@@ -100,7 +117,7 @@ const Order = () => {
                         {item.created_at}
                     </TableCell>
                     <TableCell>
-                        <Button size="small" className="ml-1" onClick={() => {sendData(item); handlePrint(item);}}><PrintIcon/></Button>
+                        <Button size="small" className="ml-1" onClick={() => sendData(item)}><PrintIcon/></Button>
                     </TableCell>
                 </TableRow>)
                 )}
