@@ -1,4 +1,4 @@
-import { Table, TableBody, TableCell, TableContainer, TableRow,Button, TableHead } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableRow,Button, TableHead, TextField } from "@mui/material";
 import React, {useState, useEffect} from "react";
 import { useCart } from "react-use-cart";
 import url from "../../../config";
@@ -10,11 +10,12 @@ import ReactToPrint,{ useReactToPrint } from "react-to-print";
 import "./Order.css"
 import BackDrop from "../../backDrop/BackDrop";
 import ThermalPrint from "../../thermalPrint/ThermalPrint";
-const Order = () => {
-    
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+const Order = () => {   
     const [open, setOpen] =useState(false)
     const [order, setOrder] = useState()
     const [content, setContent] = useState(null)
+    const [data, setData] = useState(null)
     const componentRef = useRef(null)
     const cartItems = useCart()
     const ready = useReactToPrint({
@@ -29,24 +30,27 @@ const Order = () => {
             ready()
         },500)
      }
-    // const handlePrint = useReactToPrint({
-    //     content: () => componentRef.current,
-    //     documentTitle:  "Invoice",
-    //     onAfterPrint: () => console.log("print success"),
-    // })
+    
     useEffect(()=>{
-        //console.log(handlePrint())
+       
     },[])
 
     useEffect(()=>{
       axios.get(`${url}/order`).then((res)=>{
         console.log(res.data.data)
-         setOrder(res.data.data)
+        setOrder(res.data.data)
+        setData(res.data.data)
       }).catch((error)=>{
          console.log(error)
       })
-      console.log('perfect side  effect')
     },[cartItems.isEmpty])
+    const handleSearch = (event) => {
+        let search = event.target.value
+       let searchItem = data.filter((item) => {
+           return item.customer_number.includes(search)
+        })
+        setOrder(searchItem)
+    }
     return (
         <>
         <BackDrop status={open}/>
@@ -54,8 +58,29 @@ const Order = () => {
           <Invoice  content={content}/>
        </div>
        <ThermalPrint/>
-          <TableContainer > 
-            <Table style={{marginTop: '80px'}}>   
+         <div style={{marginTop: '80px'}}>
+            <form className="d-none d-sm-inline-block form-inline mx-2 my-2 my-md-0 mw-100 navbar-search float-right" >
+              <div className="input-group">
+                {/* <TextField label="search by number" onChange={(event) => handleSearch(event)} size="small" placeholder="Ex: 1234567890"/> */}
+                <input
+                  type="text"
+                  className="form-control bg-light"
+                  placeholder="Search by number..."
+                  aria-label="Search"
+                  aria-describedby="basic-addon2"
+                  onChange={(event) => handleSearch(event)}
+                  style={{zIndex: 0}}
+                />
+                <div className="input-group-append">
+                  <button className="btn btn-primary button-outlined-0 float-right" type="button" style={{zIndex: 0}}>
+                    <SearchOutlinedIcon />
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div> 
+          <TableContainer> 
+            <Table >   
              <TableHead>
              <TableRow>
                     <TableCell>

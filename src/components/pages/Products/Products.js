@@ -2,13 +2,19 @@ import { Table, TableCell, TableContainer, TableFooter, TableHead, TableRow, But
 import React, {useEffect, useState} from "react";
 import { getProduct } from "../../../services/product";
 import { getCategory } from "../../../services/category";
-import { img_path } from "../../../config";
+import url, { img_path } from "../../../config";
 import AddProductDialog from "./AddProductDialog";
+import swal from "sweetalert";
+import axios from 'axios'
+import BackDrop from "../../backDrop/BackDrop";
+import EditProductDialog from "./EditProductDialog";
 const Products = () => {
     const [data, setData] = useState()
     const [category, setCategory] = useState()
     const [open,setOpen] = useState(false)
     const [count, setCount] = useState(0)
+    const [isLoading,setIsLoading] = useState(false)
+    const [status, setStatus] = useState(false)
     useEffect(()=>{     
          getProduct.then((res)=>{
             setData(res.data.data)
@@ -20,13 +26,54 @@ const Products = () => {
          }).catch((error)=>{
             console.log(error)
          })
-    },[])
+    },[count])
     const handleProductAdd = () => {
         setOpen(true) 
         setCount(count + 1)   
     }
+    const handleEdit = (id) => {
+        setCount(count + 1)
+        console.log(id)
+        setStatus(true)
+    }
+    const handleDelete = (id) => {
+        swal({
+            title: 'Are you sure!',
+            icon: 'warning',
+            text: 'Once you are deleted not recovered.',
+            buttons: true,
+            dangerMode: true
+        }).then((res=>{
+            setIsLoading(true)
+            if(res){
+                axios.delete(`${url}/product/${id}`).then((result)=>{
+                    axios.get(`${url}/product`).then((result)=>{
+                        setData(result.data.data)
+                    })
+                    setCount(count + 1)
+                    setIsLoading(false)
+                    swal({
+                        title: 'Delete Success!',
+                        icon: 'success',
+                        button: true
+                    })
+                }).catch((error)=>{
+                    setIsLoading(false)
+                    swal({
+                        title: 'Error ocured',
+                        icon: 'error',
+                        button: true
+                    })
+                })
+            }else{
+                setIsLoading(false) 
+            }
+        }))
+    }
     return (
         <>
+        <EditProductDialog status={status} count={count}/>
+        <BackDrop status={isLoading}/>
           <AddProductDialog status={open} count={count}/>
           <div className="container" style={{marginTop: '80px'}}>
           <Button className="float-right" color="primary" variant="contained" onClick={handleProductAdd} size="small">Add Product</Button>
@@ -88,13 +135,13 @@ const Products = () => {
                             </TableCell>
                             <TableCell>
                                 {                                   
-                                    category.find((cat_item)=> cat_item.id === item.category_id).cat_name
+                                    category && category.find((cat_item)=> cat_item.id === item.category_id).cat_name
                                 }                                   
                             </TableCell>
                             <TableCell>
                                 <div className="d-flex">
-                                <Button size="small" variant="outlined">Edit</Button>  
-                                <Button size="small" variant="outlined" className="ml-2">Delete</Button>  
+                                <Button size="small" variant="outlined" onClick={() => handleEdit(item.id)}>Edit</Button>  
+                                <Button size="small" variant="outlined" className="ml-2" onClick={() => handleDelete(item.id)}>Delete</Button>  
                                 </div>                             
                             </TableCell>
                          </TableRow>)

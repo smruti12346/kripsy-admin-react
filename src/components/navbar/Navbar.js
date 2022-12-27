@@ -43,22 +43,6 @@ const Navbar = () => {
               className="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
               aria-labelledby="searchDropdown"
             >
-              <form className="form-inline mr-auto w-100 navbar-search">
-                <div className="input-group">
-                  <input
-                    type="text"
-                    className="form-control bg-light"
-                    placeholder="Search for..."
-                    aria-label="Search"
-                    aria-describedby="basic-addon2"
-                  />
-                  <div className="input-group-append">
-                    <button className="btn btn-primary" type="button">
-                      <i className="mdi mdi-magnify"></i>
-                    </button>
-                  </div>
-                </div>
-              </form>
             </div>
           </li>
 
@@ -95,24 +79,6 @@ const Navbar = () => {
         </ul>
 
         <div className="ml-auto">
-          <a href="search.html">
-            <form className="d-none d-sm-inline-block form-inline mx-2 my-2 my-md-0 mw-100 navbar-search">
-              <div className="input-group">
-                <input
-                  type="text"
-                  className="form-control bg-light"
-                  placeholder="Search for..."
-                  aria-label="Search"
-                  aria-describedby="basic-addon2"
-                />
-                <div className="input-group-append">
-                  <button className="btn btn-primary" type="button">
-                    <SearchOutlinedIcon />
-                  </button>
-                </div>
-              </div>
-            </form>
-          </a>
           <a
             href="#"
             className="btn btn-primary "
