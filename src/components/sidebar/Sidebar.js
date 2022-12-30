@@ -2,16 +2,29 @@ import React, {useEffect, useState} from "react";
 import { Link } from "react-router-dom";
 import FastfoodIcon from '@mui/icons-material/Fastfood';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { Button } from "@mui/material";
+import { Button, Typography, } from "@mui/material";
 import axios from "axios";
 import { token } from "../../auth";
 import url from "../../config";
 import BackDrop from "../backDrop/BackDrop";
 import { useCart } from "react-use-cart";
+import ListSubheader from '@mui/material/ListSubheader';
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Collapse from '@mui/material/Collapse';
+import InboxIcon from '@mui/icons-material/MoveToInbox';
+import DraftsIcon from '@mui/icons-material/Drafts';
+import SendIcon from '@mui/icons-material/Send';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import StarBorder from '@mui/icons-material/StarBorder';
 const Sidebar = () => {
   const cartItems = useCart()
   const [open, setOpen] = useState(false)
   const [orderCount, setOrderCount] = useState(0)
+  const [btnStatus, setBtnStatus] = useState(false)
   const logout = () => {
       setOpen(true)      
       axios.post(`${url}/logout`,{'token': token}).then((res)=>{
@@ -29,6 +42,10 @@ const Sidebar = () => {
       console.log(error)
     })   
   },[cartItems.isEmpty])
+
+  const handleClick = () => {
+      setBtnStatus(!btnStatus)
+  }
   return (
     <>
       <BackDrop status={open}/>
@@ -73,21 +90,32 @@ const Sidebar = () => {
         </li>
 
         <li className="nav-item">
-          <a className="nav-link d-flex" href="messages.html">
+          <Link to="/" className="nav-link d-flex" href="messages.html">
             <i className="mdi mdi-message-text-outline mr-2"></i>
             <span>Messages</span>
             <span className="rounded-circle bg-white text-primary ml-auto px-2 py-1">
               2
             </span>
-          </a>
+          </Link>
         </li>
-
-        <li className="nav-item">
-          <a className="nav-link" href="settings.html">
-            <i className="mdi mdi-cog"></i>
-            <span>Settings</span>
-          </a>
-        </li>
+         <List>
+         <ListItemButton onClick={handleClick}>
+         <Typography variant="p" sx={{color: '#ffffffcc',pl: 1, pr: 12, fontSize: '12px'}}>SETTINGS</Typography>
+        {btnStatus ? <ExpandLess className="text-white"/> : <ExpandMore className="text-white"/>}
+      </ListItemButton>
+      <Collapse in={btnStatus} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding style={{fontSize: '12px'}}>
+          <Link to="/user">
+          <ListItemButton sx={{ pl: 6}}>
+            <Typography variant="p" sx={{color: '#ffffffcc'}}>USERS</Typography>
+          </ListItemButton>
+          </Link>
+          <ListItemButton sx={{ pl: 6 }}>
+          <Typography variant="p" sx={{color: '#ffffffcc'}}>OTHERS</Typography>
+          </ListItemButton>
+        </List>
+      </Collapse>
+         </List>
 
         <div
           className="bg-white m-3 p-3 sidebar-alert rounded text-center alert fade show d-none d-md-inline"

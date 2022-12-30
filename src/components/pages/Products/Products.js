@@ -12,9 +12,11 @@ const Products = () => {
     const [data, setData] = useState()
     const [category, setCategory] = useState()
     const [open,setOpen] = useState(false)
-    const [count, setCount] = useState(0)
+    const [editOpen, setEditOpen] = useState(false)
     const [isLoading,setIsLoading] = useState(false)
     const [status, setStatus] = useState(false)
+    const [count, setCount] = useState(0)
+    const [editId, setEditId] = useState(null);
     useEffect(()=>{     
          getProduct.then((res)=>{
             setData(res.data.data)
@@ -28,12 +30,13 @@ const Products = () => {
          })
     },[count])
     const handleProductAdd = () => {
-        setOpen(true) 
-        setCount(count + 1)   
+        setOpen(!open)   
     }
     const handleEdit = (id) => {
+        setEditId(id)
+        setEditOpen(!editOpen)
         setCount(count + 1)
-        console.log(id)
+        //console.log(id)
         setStatus(true)
     }
     const handleDelete = (id) => {
@@ -72,7 +75,7 @@ const Products = () => {
     }
     return (
         <>
-        <EditProductDialog status={status} count={count}/>
+        <EditProductDialog status={editOpen} id={editId}/>
         <BackDrop status={isLoading}/>
           <AddProductDialog status={open} count={count}/>
           <div className="container" style={{marginTop: '80px'}}>

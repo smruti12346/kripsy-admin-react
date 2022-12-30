@@ -10,13 +10,13 @@ import axios from "axios";
 import url from "../../../config";
 import BackDrop from "../../backDrop/BackDrop";
 const AddProductDialog = (props) => {
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(true)
     const [category, setCategory] = useState(null)
     const [slug, setSlug] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     useEffect(()=>{
-       setOpen(props.status)  
-    },[props.count])
+       setOpen(!open)  
+    },[props.status])
     const handleClose = () => {
          setOpen(false)
     }

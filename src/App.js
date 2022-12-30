@@ -12,6 +12,7 @@ import Products from "./components/pages/Products/Products";
 import  auth  from "./auth";
 import { useEffect } from "react";
 import Order from "./components/pages/Order/Order";
+import User from "./components/pages/User/User";
 function App() {
   const path = window.location.pathname;
   console.log('auth', auth)
@@ -43,6 +44,7 @@ function App() {
                   <Route exact path="/products" element={<Products />} />
                   <Route exact path="/login" element={<Login />} />
                   <Route exact path="/order" element={<Order />} />
+                  <Route exact path="/user" element={<User/>} />
                 </Routes>
               </div>
               <Footer />

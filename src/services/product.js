@@ -5,4 +5,7 @@ const getProduct = axios.get(`${url}/product`)
 const addProduct = (data) => {
     axios.post(`${url}/product`, data) 
 } 
-export { getProduct, addProduct }
+const singleProduct = (id) => {
+    axios.get(`${url}/product/${id}`)
+}
+export { getProduct, addProduct, singleProduct }
