@@ -17,29 +17,27 @@ const CheckoutModal = (props) => {
     const [dropStatus, setDropStatus] = useState(false)
     const formik = useFormik({
       initialValues: {
-        name: '',
-        mobile: ''
+        name_cod: '',
+        mobile_cod: ''
       },
       validationSchema: Yup.object({
-        name: Yup.string().min(3),
-        mobile: Yup.string().matches(/^\d{10}$/,'Please Enter 10 digit valid phone number').required(),
+        name_cod: Yup.string().min(3),
+        mobile_cod: Yup.string().matches(/^\d{10}$/,'Please Enter 10 digit valid phone number').required().label('Phone'),
       }),
       onSubmit: function(values){
-         console.log(values)
          setDropStatus(true)
          let data = {
-            customer_name: values.name,
-            customer_number: values.mobile,
+            customer_name: values.name_cod,
+            customer_number: values.mobile_cod,
             items: JSON.stringify(cartItems.items),
             total_cost: cartItems.cartTotal
          }
-         console.log(data);
          axios.post(`${url}/order`, data).then((res)=>{
              setDropStatus(false)
              setOpen(false)
              swal("Placed!", "You order is successfully placed!", "success");
              cartItems.emptyCart()
-             console.log(res)
+             formik.values.mobile_cod = ''
          }).catch((error)=>{
              console.log(error);
          })
@@ -177,12 +175,12 @@ const CheckoutModal = (props) => {
                 <>
                   <form id="codForm">
                     <div>
-                  <TextField name="name" size="small" label="Full Name" onChange={formik.handleChange}/>
-                  <p><span className="text-danger">{formik.touched && formik.errors && formik.errors.name}</span></p>
+                  <TextField name="name_cod" size="small" label="Full Name" onChange={formik.handleChange}/>
+                  <p><span className="text-danger">{formik.touched && formik.errors && formik.errors.name_cod}</span></p>
                   </div>
                   <div>
-                  <TextField name="mobile" size="small" label="*Phone Number" onChange={formik.handleChange}/>
-                  <p><span className="text-danger">{formik.touched && formik.errors && formik.errors.mobile}</span></p>
+                  <TextField name="mobile_cod" size="small" label="*Phone Number" onChange={formik.handleChange}/>
+                  <p><span className="text-danger">{formik.touched && formik.errors && formik.errors.mobile_cod}</span></p>
                   </div>
                   </form>
                 </>

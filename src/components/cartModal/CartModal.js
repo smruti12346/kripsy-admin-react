@@ -30,7 +30,6 @@ const CartModal = (props) => {
   }
   const addMore = () => {
      setCheck(false)
-     console.log('hello add more')
      window.location.href = "/"
   }
   const handleCheckout = () => {
@@ -69,7 +68,7 @@ const CartModal = (props) => {
                   <div className="small text-black-50">{item.quantity} x</div>
                   <div className="ml-2">
                     <p className="mb-0 text-black">{item.product_name}</p>
-                    <p className="mb-0 small">₹ {item.sale_price}
+                    <p className="mb-0 small">₹ {item.price}
                     
                     </p>
                   </div>

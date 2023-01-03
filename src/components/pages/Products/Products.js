@@ -19,8 +19,10 @@ const Products = () => {
     const [editId, setEditId] = useState(null);
     useEffect(()=>{     
          getProduct.then((res)=>{
+            setIsLoading(false)
             setData(res.data.data)
          }).catch((err)=>{
+            setIsLoading(false)
             console.log(err)
          })
          getCategory.then((res)=>{
@@ -29,6 +31,9 @@ const Products = () => {
             console.log(error)
          })
     },[count])
+    useEffect(()=>{
+        setIsLoading(false) 
+    },[])
     const handleProductAdd = () => {
         setOpen(!open)   
     }
@@ -94,10 +99,10 @@ const Products = () => {
                                 Description
                             </TableCell>
                             <TableCell>
-                                Price
+                                MRP
                             </TableCell>
                             <TableCell>
-                                Sale Price
+                                Price
                             </TableCell>
                             <TableCell>
                                Product Type
@@ -124,10 +129,10 @@ const Products = () => {
                                 {item.description}
                             </TableCell>
                             <TableCell>
-                                {item.price}
+                                {item.sale_price}
                             </TableCell>
                             <TableCell>
-                            {item.sale_price}
+                            {item.price}
                             </TableCell>
                             <TableCell>
                                 {item.product_type}

@@ -27,7 +27,6 @@ const Category = () => {
     useEffect(()=>{
       getCategory.then((res)=>{
           setData(res.data.result)
-          console.log(res.data.result)
       }).catch((error)=>{
             console.log(error)
       }) 

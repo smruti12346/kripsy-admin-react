@@ -1,4 +1,4 @@
-import { Table, TableBody, TableCell, TableContainer, TableRow,Button, TableHead, TextField } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableRow,Button, TableHead, TextField, TablePagination, TableFooter } from "@mui/material";
 import React, {useState, useEffect} from "react";
 import { useCart } from "react-use-cart";
 import url from "../../../config";
@@ -11,39 +11,58 @@ import "./Order.css"
 import BackDrop from "../../backDrop/BackDrop";
 import ThermalPrint from "../../thermalPrint/ThermalPrint";
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+
+//let ThermalPrinterEncoder = require('thermal-printer-encoder')
+// const ThermalPrinter = require("../node-thermal-printer").printer;
+// const PrinterTypes = require("../node-thermal-printer").types;
+import { Br, Cut, Line, Printer, Text, Row, render } from 'react-thermal-printer';
 const Order = () => {   
     const [open, setOpen] =useState(false)
     const [order, setOrder] = useState()
     const [content, setContent] = useState(null)
     const [data, setData] = useState(null)
+    // pagination state 
+    const [links, setLinks] = useState({})
+    const [total, setTotal] = useState(0)
+    const [page, setPage] = React.useState(0);
+    const [rowsPerPage, setRowsPerPage] = React.useState(10);
+   //pagination end
     const componentRef = useRef(null)
     const cartItems = useCart()
+     
+  
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
     const ready = useReactToPrint({
         content: () => componentRef.current,
         documentTitle:  "Invoice",
         onAfterPrint: (item) => setOpen(false),
     })
-     const sendData = (item) => {
+     const sendData = async(item) => {        
         setOpen(true)
         setContent(item)       
         setTimeout(()=>{
             ready()
         },500)
      }
-    
     useEffect(()=>{
-       
-    },[])
-
-    useEffect(()=>{
-      axios.get(`${url}/order`).then((res)=>{
-        console.log(res.data.data)
-        setOrder(res.data.data)
-        setData(res.data.data)
+      axios.get(`${url}/order?page=${page + 1}&per_page=${rowsPerPage}`).then((res)=>{
+        setLinks(res.data.data.links)
+        setTotal(res.data.data.total)
+        setOrder(res.data.data.data)
+        setData(res.data.data.data)
       }).catch((error)=>{
          console.log(error)
       })
-    },[cartItems.isEmpty])
+    },[cartItems.isEmpty, rowsPerPage, page])
     const handleSearch = (event) => {
         let search = event.target.value
        let searchItem = data.filter((item) => {
@@ -109,8 +128,7 @@ const Order = () => {
                     </TableCell>
                 </TableRow>
             </TableHead>            
-             <TableBody>
-             
+             <TableBody>             
                 {order && order.map((item)=>               
                 (<TableRow key={item.id}>
                     <TableCell>
@@ -146,8 +164,20 @@ const Order = () => {
                     </TableCell>
                 </TableRow>)
                 )}
+                
              </TableBody>
+             <TableFooter>
+             
+             </TableFooter>
              </Table>
+             <TablePagination
+      component="div"
+      count={total}
+      page={page}
+      onPageChange={handleChangePage}
+      rowsPerPage={rowsPerPage}
+      onRowsPerPageChange={handleChangeRowsPerPage}
+    />
             </TableContainer>      
         </>
     )

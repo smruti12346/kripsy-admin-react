@@ -30,6 +30,8 @@ const EditProductDialog = (props) => {
                setIsLoading(false)
                 console.log(error)
             }) 
+        }else{
+         setIsLoading(false)
         }
     },[props.status])
     const handleClose = () => {
@@ -91,14 +93,16 @@ const EditProductDialog = (props) => {
            formData.append('position', values.position)
            formData.append('image', values.image)
            formData.append('category_id', values.category_id)
+           formData.append('_method', 'PUT')
+           //formData.append('method', 'POST')
 
-           axios.post(`${url}/product`, formData).then((res)=>{
+           axios.post(`${url}/product/${props.id}`, formData).then((res)=>{
             setOpen(false)
             setIsLoading(false)
                console.log(res)
                 swal({
                   title: 'Success',
-                  text: 'Product Added Success!',
+                  text: 'Product Update Success!',
                   icon: 'success',
                   button: 'OK'
                 }).then((response)=>{
@@ -142,10 +146,10 @@ const EditProductDialog = (props) => {
                  </div>
                  <div className="d-flex mb-2">
                   <TextField label="description" value={formik.values.description} name="description" size="small" focused onChange={formik.handleChange} helperText={formik.errors.description}/>
-                  <TextField label="price" size="small" value={formik.values.price}  name="price" className="ml-2" onChange={formik.handleChange} helperText={formik.errors.price}/>
+                  <TextField value={formik.values.sale_price} label="mrp" className="ml-2" name="sale_price" size="small" onChange={formik.handleChange} helperText={formik.errors.sale_price}/> 
                  </div>
                   <div className="d-flex mb-2">
-                    <TextField value={formik.values.sale_price} label="sale price" name="sale_price" size="small" onChange={formik.handleChange} helperText={formik.errors.sale_price}/> 
+                    <TextField label="price" size="small" value={formik.values.price}  name="price" onChange={formik.handleChange} helperText={formik.errors.price}/>                   
                     <TextField value={formik.values.position} label="position" name="position" size="small" className="ml-2" onChange={formik.handleChange} helperText={formik.errors.position}/>
                   </div>
                   <div className="d-flex">

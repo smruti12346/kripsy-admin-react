@@ -29,9 +29,6 @@ const Home = () => {
         //addItem(item)         
    }
    useEffect(()=>{
-      console.log(cartItem)
-   },[cartItem])
-   useEffect(()=>{
     window.onscroll = () => {
       if(window.scrollY > 100){
         setCatSticky(true)
@@ -60,11 +57,9 @@ const Home = () => {
             className="text-decoration-none  col-xl-2 col-md-4"
           >
             <div className="text-center link">
-              {/* <i className="mdi mdi-fire bg-danger text-white osahan-icon mx-auto rounded-pill"></i> */}
-              
+              {/* <i className="mdi mdi-fire bg-danger text-white osahan-icon mx-auto rounded-pill"></i> */}              
               <img src={`${img_path}/category/${item.image}`} className="rounded-circle" style={{height: '30px'}}/>
-              <p className="mb-1 mt-1 text-dark">{item.cat_name}</p>
-              
+              <p className="mb-1 mt-1 text-dark">{item.cat_name}</p>          
             </div>
           </Link>)
            )}
@@ -112,7 +107,7 @@ const Home = () => {
           (
           <a
             key={product_item.id}            
-            className="text-dark text-decoration-none col-xl-4 col-lg-12 col-md-12"
+            className="text-dark text-decoration-none col-xl-4 col-lg-12 col-md-12"small
           >
             <div className="bg-white shadow-sm rounded d-flex align-items-center p-1 mb-4 osahan-list">
               <div className="bg-light p-3 rounded">
@@ -121,8 +116,11 @@ const Home = () => {
               <div className="mx-3 py-2 w-100">
                 <p className="mb-2 text-black text-center">{product_item.product_name}</p>
                 <p className="small mb-2 text-center">
-                  <i className="mdi mdi-silverware-fork-knife mr-1"></i> {toTitleCase(cat_item.cat_name)}
-                   <span style={{fontSize: '17px'}}><i className="mdi mdi-currency-inr ml-3"></i> ₹ {product_item.sale_price}/-</span>
+                  {product_item.price !== product_item.sale_price ?
+                   (<span style={{fontSize: '17px'}} className="text-danger"><del> ₹ {product_item.sale_price}</del></span>) : null
+                  }
+                   <span style={{fontSize: '17px'}}><i className="mdi mdi-currency-inr ml-3"></i> ₹ {product_item.price}/-</span>
+                   <p>{toTitleCase(cat_item.cat_name)}</p>
                    {!cartItem.inCart(product_item.id) ?
                    (<Button variant="contained" className="mt-2" color="warning" onClick={() => add_to_cart(product_item) } size="small">Order Now</Button>):
                      (<Button variant="contained" className="mt-2" color="error" onClick={() => cartItem.removeItem(product_item.id)} size="small">Remove</Button>)

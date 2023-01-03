@@ -126,11 +126,11 @@ const AddProductDialog = (props) => {
                  </div>
                  <div className="d-flex mb-2">
                   <TextField label="description" name="description" size="small" focused onChange={formik.handleChange} helperText={formik.errors.description}/>
-                  <TextField label="price" size="small" name="price" className="ml-2" onChange={formik.handleChange} helperText={formik.errors.price}/>
+                  <TextField label="mrp" name="sale_price" size="small" onChange={formik.handleChange} helperText={formik.errors.sale_price} className="ml-2"/> 
                  </div>
                   <div className="d-flex mb-2">
-                    <TextField label="sale price" name="sale_price" size="small" onChange={formik.handleChange} helperText={formik.errors.sale_price}/> 
-                    <TextField label="position" name="position" size="small" className="ml-2" onChange={formik.handleChange} helperText={formik.errors.position}/>
+                   <TextField label="price" size="small" name="price" onChange={formik.handleChange} helperText={formik.errors.price}/>
+                   <TextField label="position" name="position" size="small" className="ml-2" onChange={formik.handleChange} helperText={formik.errors.position}/>
                   </div>
                   <div className="d-flex">
                   <FormControl size="small" sx={{minWidth: 222}}>

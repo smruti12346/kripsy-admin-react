@@ -1,9 +1,12 @@
+
 import React, { forwardRef } from "react";
 import { useEffect } from "react";
+// import ThermalPrinterEncoder from "thermal-printer-encoder";
+//let ThermalPrinterEncoder = require('thermal-printer-encoder')
+//import ThermalPrinterEncoder from "thermal-printer-encoder";
 const Invoice = (props, ref) => {
     useEffect(()=>{
-       console.log(props)
-       console.log(ref)
+     
     },[])
     const date = new Date()
   return (
