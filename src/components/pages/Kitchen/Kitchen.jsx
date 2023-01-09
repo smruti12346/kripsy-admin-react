@@ -15,7 +15,7 @@ import { orderUpdate } from "../../../services/order";
 import auth from "../../../auth";
 const Kitchen = () => {  
      
-    const [path, setPath] = useState('/kitchen')
+    const [path, setPath] = useState(false)
     const [open, setOpen] =useState(false)
     const [order, setOrder] = useState()
     const [content, setContent] = useState(null)
@@ -65,9 +65,12 @@ const Kitchen = () => {
         },500)
      }
      useEffect(()=>{
-        setPath(window.location.pathname)
+        
         if(window.location.pathname == '/sub-admin/kitchen'){
           setTop('10px')
+          setPath(true)
+        }else{
+          setPath(false)
         }
         console.log(window.location.pathname)
      },[])
@@ -144,9 +147,10 @@ const Kitchen = () => {
           <Invoice  content={content}/>
        </div>
          <div className="container" style={ {marginTop: top}}>
-            <div className="mt-4">
+          {path ? 
+            (<div className="mt-4">
                <Button variant="outlined" onClick={logout}>Logout</Button>
-            </div>
+            </div>): null}
             <form className="d-none d-sm-inline-block form-inline mx-2 my-2 my-md-0 mw-100 navbar-search float-right" >
               <div className="input-group">
                 {/* <TextField label="search by number" onChange={(event) => handleSearch(event)} size="small" placeholder="Ex: 1234567890"/> */}
