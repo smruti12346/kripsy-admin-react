@@ -34,7 +34,7 @@ const Sidebar = () => {
     }).catch((error)=> {
       console.log(error)
     })   
-  },[cartItems.getItem])
+  },[])
 
   const handleClick = () => {
       setBtnStatus(!btnStatus)
@@ -76,6 +76,15 @@ const Sidebar = () => {
           <Link className="nav-link d-flex" to="order">
             <i className="mdi mdi-message-text-outline mr-2"></i>
             <span>Orders</span>
+            <span className="rounded-circle bg-white text-primary ml-auto px-2 py-1">
+              {orderCount}
+            </span>
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link className="nav-link d-flex" to="kitchen">
+            <i className="mdi mdi-message-text-outline mr-2"></i>
+            <span>Kitchen</span>
             <span className="rounded-circle bg-white text-primary ml-auto px-2 py-1">
               {orderCount}
             </span>

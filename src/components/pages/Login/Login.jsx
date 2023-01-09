@@ -3,7 +3,7 @@ import * as Yup from "yup"
 import { useFormik } from "formik";
 import url from "../../../config";
 import axios from "axios";
-import auth from "../../../auth";
+import auth, {auth_check} from "../../../auth";
 import BackDrop from "../../backDrop/BackDrop";
 import { Button, Snackbar } from "@mui/material";
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
@@ -14,7 +14,18 @@ const Login = () => {
     const [snackOpen, setSnackOpen] = useState(false)
     useEffect(()=>{
        if(auth){
-          window.location.href = "/"
+          auth_check.then((res)=>{
+             if(res.data.user.type == 1){
+                  window.location.href = "/"
+             }else if(res.data.user.type == 2){
+                  window.location.href = "/sub-admin/kitchen"
+             }
+          }).then((error)=>{
+              console.log(error)
+          })
+          
+       }else{
+          console.log('false')
        }
     },[])
     const handleClose = () => {
@@ -32,7 +43,11 @@ const Login = () => {
         onSubmit : function(values){
            setOpen(true)
            setCount(count + 1)
-           axios.post(`${url}/login`, {email: values.user_email, password: values.password}).then((res)=>{               
+           axios.post(`${url}/login`, {email: values.user_email, password: values.password}).then((res)=>{
+              console.log(res)   
+              // if(res.data.user.type == 2){
+              //     window
+              // }            
                if(res.data.status){
                   setOpen(false)
                   setCount(count + 1)
@@ -43,7 +58,14 @@ const Login = () => {
                console.log(res.data.token)
                localStorage.setItem('token', res.data.token)
                if(res.data.success){
-                  return window.location.href = "/"
+                  if(res.data.user.type == 2){
+                    return window.location.href = "/sub-admin/kitchen"
+                  }else if(res.data.user.type == 1){
+                    return window.location.href = "/"
+                  }else{
+                     console.log('else statement of login component')
+                  }
+                  
                }
            }).catch((error)=>{
               if(error.response.data.success === false){

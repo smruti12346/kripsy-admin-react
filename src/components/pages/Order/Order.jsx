@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableContainer, TableRow,Button, TableHead, TextField, TablePagination, TableFooter } from "@mui/material";
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useMemo} from "react";
 import { useCart } from "react-use-cart";
 import url from "../../../config";
 import axios from "axios";
@@ -11,27 +11,27 @@ import "./Order.css"
 import BackDrop from "../../backDrop/BackDrop";
 import ThermalPrint from "../../thermalPrint/ThermalPrint";
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
-
-//let ThermalPrinterEncoder = require('thermal-printer-encoder')
-// const ThermalPrinter = require("../node-thermal-printer").printer;
-// const PrinterTypes = require("../node-thermal-printer").types;
-import { Br, Cut, Line, Printer, Text, Row, render } from 'react-thermal-printer';
+import QRCode from 'qrcode.react';
+import {channel} from '../../../services/pusher'
+import jwt_decode from "jwt-decode";
+// import { ThermalPrinterPlugin } from 'thermal-printer-cordova-plugin/src';
 const Order = () => {   
     const [open, setOpen] =useState(false)
     const [order, setOrder] = useState()
     const [content, setContent] = useState(null)
-    const [data, setData] = useState(null)
+    const [data, setData] = useState()
     // pagination state 
     const [links, setLinks] = useState({})
     const [total, setTotal] = useState(0)
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const [count, setCount] = useState(0)
+    const [allData, setAllData] = useState([])
    //pagination end
     const componentRef = useRef(null)
     const cartItems = useCart()
-     
-  
-
+    //let allData = [];
+   
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -54,15 +54,18 @@ const Order = () => {
         },500)
      }
     useEffect(()=>{
+      let tok = jwt_decode(localStorage.getItem('token'));
+      console.log(tok);
       axios.get(`${url}/order?page=${page + 1}&per_page=${rowsPerPage}`).then((res)=>{
         setLinks(res.data.data.links)
         setTotal(res.data.data.total)
         setOrder(res.data.data.data)
         setData(res.data.data.data)
+        //allData.push(res.data.data.data)
       }).catch((error)=>{
          console.log(error)
       })
-    },[cartItems.isEmpty, rowsPerPage, page])
+    },[rowsPerPage, page])
     const handleSearch = (event) => {
         let search = event.target.value
        let searchItem = data.filter((item) => {
@@ -70,13 +73,21 @@ const Order = () => {
         })
         setOrder(searchItem)
     }
+    useMemo(()=>{
+     channel.bind('order-event', function(pushdata) {
+      setLinks(pushdata.order.links)
+      setTotal(pushdata.order.total)
+      setOrder(pushdata.order.data)
+      setData(pushdata.order.data)
+      });     
+    },[allData])
+    
     return (
-        <>
+        <>        
         <BackDrop status={open}/>
        <div ref={componentRef} className="media">
           <Invoice  content={content}/>
        </div>
-       <ThermalPrint/>
          <div style={{marginTop: '80px'}}>
             <form className="d-none d-sm-inline-block form-inline mx-2 my-2 my-md-0 mw-100 navbar-search float-right" >
               <div className="input-group">
@@ -128,7 +139,7 @@ const Order = () => {
                     </TableCell>
                 </TableRow>
             </TableHead>            
-             <TableBody>             
+             <TableBody>                 
                 {order && order.map((item)=>               
                 (<TableRow key={item.id}>
                     <TableCell>
@@ -155,6 +166,7 @@ const Order = () => {
                         {item.order_status === 1 ? 'Placed' : null}
                         {item.order_status === 2 ? 'Confirmed' : null}
                         {item.order_status === 3 ? 'Complete' : null}
+                        {item.order_status === 0 ? 'Cancel' : null}
                     </TableCell>
                     <TableCell>
                         {item.created_at}
@@ -178,7 +190,8 @@ const Order = () => {
       rowsPerPage={rowsPerPage}
       onRowsPerPageChange={handleChangeRowsPerPage}
     />
-            </TableContainer>      
+            </TableContainer>   
+            {/* <QRCode value="https://www.google.com/search?q=G-01%2C+Raghunath+city+Mall%2C+Maal+road%2C+Almora+krispy+chicken&rlz=1C1YTUH_enIN1019IN1019&oq=G-01%2C+Raghunath+city+Mall%2C+Maal+road%2C+Almora+krispy+chicken&aqs=chrome..69i57.14958j0j7&sourceid=chrome&ie=UTF-8#lrd=0x39a0b1ee5b75e3c7:0x8e5f24bbe6c560a,1,,," renderAs="canvas"/>    */}
         </>
     )
 }

@@ -13,9 +13,11 @@ import  auth  from "./auth";
 import { useEffect } from "react";
 import Order from "./components/pages/Order/Order";
 import User from "./components/pages/User/User";
+import Kitchen from "./components/pages/Kitchen/Kitchen";
 function App() {
   const path = window.location.pathname;
   console.log('auth', auth)
+  console.log('path', path)
   //const navigate = useNavigate()
   useEffect(()=>{
    
@@ -28,12 +30,20 @@ function App() {
   return (
    <CartProvider>
     <Router>
+      
       <Routes>
            <Route exact path="/login" element={<Login />} />
       </Routes>
       {path === "/login" ? null : (
         <>
-          <div id="wrapper">
+        {
+          path == "/sub-admin/kitchen" ? (
+            <Routes>
+                <Route exact path="/sub-admin/kitchen" element={<Kitchen/>}/>
+            </Routes>
+          )
+        :
+          (<div id="wrapper">
             <Sidebar />
             <div id="content-wrapper" className="d-flex flex-column">
               <div id="content">
@@ -45,11 +55,12 @@ function App() {
                   <Route exact path="/login" element={<Login />} />
                   <Route exact path="/order" element={<Order />} />
                   <Route exact path="/user" element={<User/>} />
+                  <Route exact path="/kitchen" element={<Kitchen/>} />
                 </Routes>
               </div>
               <Footer />
             </div>
-          </div>
+          </div>)}
         </>
       )}
     </Router>

@@ -1,10 +1,10 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import CartModal from "../cartModal/CartModal";
 import { Badge } from "@mui/material";
 import { useCart } from "react-use-cart";
+import auth, {auth_check} from "../../auth";
 const Navbar = () => {
   const [check, setCheck] = useState(false)
   const [btn, setBtn] = useState(1)
@@ -14,6 +14,24 @@ const Navbar = () => {
      setCheck(true)
      setBtn(btn + 1)
   }
+  useEffect(() => {
+    if(auth){
+      auth_check.then((res)=>{
+         if(res.data.user.type == 1){
+             console.log('reson too many request')
+            //  window.location.href = "/"
+         }else if(res.data.user.type == 2){
+              window.location.href = "/sub-admin/kitchen"
+         }
+      }).then((error)=>{
+          console.log(error)
+      })
+      
+   }else{
+      console.log('false')
+   }
+   
+  }, []);
   return (
     <>
       <CartModal cart={check} btn={btn}/>
