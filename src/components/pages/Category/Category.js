@@ -3,6 +3,9 @@ import {TableContainer, Table, TableBody, TableCell, TableFooter, TableRow, Tabl
 import DialogBox from "./DialogBox";
 import { getCategory } from "../../../services/category";
 import { img_path } from "../../../config";
+import axios from "axios";
+import swal from "sweetalert";
+import url from "../../../config";
 const Category = () => {
 //     const data = [
 //         {name: 'rolls', image: 'abc.jpg'},
@@ -31,6 +34,28 @@ const Category = () => {
             console.log(error)
       }) 
     },[])
+    const handleDelete = (id) => {
+        swal({
+            text: 'Are you want to delete!',
+            icon: 'warning',
+            buttons: true
+        }).then((bool)=>{
+            if(bool){
+                  axios.delete(`${url}/category/${id}`).then((res)=> {
+                        setData(data.filter((item)=>{
+                             return item.id != id 
+                        }))
+                       swal({
+                          text: 'Category delete Success',
+                          icon: 'success'
+                       })
+                  }).then((error)=>{
+                      console.log(error)
+                  })
+            }
+        })
+        
+    }
     return (
         <>
           {open ? (<DialogBox status={open} box={count}/>): null  }                
@@ -66,8 +91,8 @@ const Category = () => {
                                    <img style={{width: '70px'}} src={`${img_path}/category/${item.image}`} />
                               </TableCell>
                               <TableCell>
-                                    <Button variant="outlined">Edit</Button>
-                                    <Button variant="outlined">Delete</Button>
+                                    <Button variant="outlined" size="small">Edit</Button>
+                                    <Button variant="outlined" className="ml-2" size="small" onClick={() => handleDelete(item.id)}>Delete</Button>
                               </TableCell>
                            </TableRow>
                         )

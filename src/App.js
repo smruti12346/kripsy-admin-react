@@ -1,4 +1,3 @@
-import logo from "./logo.svg";
 import "./App.css";
 import Sidebar from "./components/sidebar/Sidebar";
 import Navbar from "./components/navbar/Navbar";
@@ -10,28 +9,27 @@ import Login from "./components/pages/Login/Login";
 import { CartProvider } from "react-use-cart";
 import Products from "./components/pages/Products/Products";
 import  auth  from "./auth";
-import { useEffect } from "react";
+import { createContext, useEffect } from "react";
 import Order from "./components/pages/Order/Order";
 import User from "./components/pages/User/User";
 import Kitchen from "./components/pages/Kitchen/Kitchen";
+import DoorStep from "./components/pages/DoorStep/DoorStep";
+
+const Context = createContext(false)
+export {Context}
 function App() {
   const path = window.location.pathname;
-  console.log('auth', auth)
-  console.log('path', path)
-  //const navigate = useNavigate()
-  useEffect(()=>{
-   
-    // if(!auth){
-    //     navigate("/login")
-    //   }else{
-    //     navigate("/")
-    //   }
-  },[])
   return (
+    <Context.Provider value="true">
    <CartProvider>
-    <Router>
-      
-      <Routes>
+    { path === "/doorstep" ?
+    (<Router>
+        <Routes>
+            <Route exact path="doorstep" element={<DoorStep/>}/>
+        </Routes>
+    </Router>):
+    (<Router>
+      <Routes>         
            <Route exact path="/login" element={<Login />} />
       </Routes>
       {path === "/login" ? null : (
@@ -63,8 +61,9 @@ function App() {
           </div>)}
         </>
       )}
-    </Router>
+    </Router>)}
     </CartProvider>
+    </Context.Provider> 
   );
 }
 

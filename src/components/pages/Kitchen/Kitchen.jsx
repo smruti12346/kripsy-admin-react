@@ -1,6 +1,6 @@
-import { Stack,Chip, Table, TableBody, TableCell, TableContainer, TableRow,Button,InputLabel, TableHead, TextField, TablePagination, TableFooter, Select, ListItem, MenuItem, FormControl } from "@mui/material";
-import React, {useState, useEffect, useMemo, useRef} from "react";
-import { useCart } from "react-use-cart";
+import { Stack,Chip, Table, TableBody, TableCell, TableContainer, TableRow,Button,InputLabel, TableHead, TextField, TablePagination, TableFooter, Select, ListItem, MenuItem, FormControl, Typography, LinearProgress, CircularProgress } from "@mui/material";
+import React, {useState, useEffect, useMemo, useRef, useReducer, useContext} from "react";
+import { initialState, useCart } from "react-use-cart";
 import url from "../../../config";
 import axios from "axios";
 import PrintIcon from '@mui/icons-material/Print';
@@ -13,13 +13,24 @@ import QRCode from 'qrcode.react';
 import {channel} from '../../../services/pusher'
 import { orderUpdate } from "../../../services/order";
 import auth from "../../../auth";
-const Kitchen = () => {  
-     
+import { Step, StepLabel, Stepper } from "@material-ui/core";
+import './kitchen.css'
+import swal from "sweetalert";
+import { Context } from "../../../App";
+const reducer = (accum, action) => {
+   switch(action){
+      case 1 : return accum += "confirm"
+      case 2 : return accum  += "complete"
+      default: return accum += "confirm"
+   }
+}
+const Kitchen = () => {   
     const [path, setPath] = useState(false)
     const [open, setOpen] =useState(false)
     const [order, setOrder] = useState()
     const [content, setContent] = useState(null)
     const [data, setData] = useState()
+    const [bool, setBool] = useState(true)
     // pagination state 
     const [links, setLinks] = useState({})
     const [total, setTotal] = useState(0)
@@ -30,6 +41,14 @@ const Kitchen = () => {
     const [editable, setEditable] = useState()
     const [top, setTop] = useState('80px')
    //pagination end
+   // reducer hook for stepper
+    let initialState = 1
+    let total_count
+    let page_count
+    let rowsPerPage_count
+
+    const [state, dispatch] = useReducer(reducer,initialState)
+
    const styles = {
     borderBottomGreen: {
        'borderBottom': '1px solid green',
@@ -51,7 +70,6 @@ const Kitchen = () => {
     setPage(0);
   };
 
-
     const ready = useReactToPrint({
         content: () => componentRef.current,
         documentTitle:  "Invoice",
@@ -65,27 +83,38 @@ const Kitchen = () => {
         },500)
      }
      useEffect(()=>{
-        
-        if(window.location.pathname == '/sub-admin/kitchen'){
+        if(window.location.pathname === '/sub-admin/kitchen'){
           setTop('10px')
           setPath(true)
         }else{
           setPath(false)
         }
-        console.log(window.location.pathname)
      },[])
-     
+     let months = ['Jan', 'Feb','Mar','Apr','May','June','July', 'Aug','Sep','Oct','Nov','Dec']
+     const getTime = (item) => {
+        let date = new Date(item)
+        return  date.getDate() + months[date.getMonth()]+ "," +(String(date.getHours() % 12 || 12).padStart(2, '0')) + ":" + String(date.getMinutes()).padStart(2,'0') + ((date.getHours() >= 12) ? "pm" : "am")
+     }
+     const context = useContext(Context)
     useEffect(()=>{
+      let isOrder = true
       axios.get(`${url}/order?page=${page + 1}&per_page=${rowsPerPage}`).then((res)=>{
-        setLinks(res.data.data.links)
-        setTotal(res.data.data.total)
-        setOrder(res.data.data.data)
-        setData(res.data.data.data)
-        //allData.push(res.data.data.data)
+        if(isOrder){
+          setLinks(res.data.data.links)
+          setTotal(res.data.data.total)
+          setOrder(res.data.data.data)
+          setData(res.data.data.data)
+          window.order_data = res.data.data.data
+          let date = new Date(res.data.data.data[0].created_at)
+        }       
       }).catch((error)=>{
          console.log(error)
       })
+      return () => {
+        isOrder = false
+      }
     },[page, rowsPerPage])
+
     const handleSearch = (event) => {
         let search = event.target.value
        let searchItem = data.filter((item) => {
@@ -93,34 +122,43 @@ const Kitchen = () => {
         })
         setOrder(searchItem)
     }
-    useMemo(()=>{
-     channel.bind('order-event', function(pushdata) {
-        console.log(pushdata)
-        //setAllData([pushdata.order.data, ...allData]);
-        //setAllData(pushdata.order.data)
-        setLinks(pushdata.order.links)
-        setTotal(pushdata.order.total)
-        setOrder(pushdata.order.data)
-        setData(pushdata.order.data)
-      });     
+    useEffect(()=>{
+      let bind_data = true
+      if(bind_data){  
+        console.log('ppp')
+      channel.bind('order-event', function(pushdata) {  
+            const pure_data = window.order_data.map((it)=> {
+                if(it.id === pushdata.order.id){
+                   return pushdata.order;
+                }else{
+                  return it;
+                }
+            })
+            setData(pure_data)
+            setOrder(pure_data)
+            window.order_data = pure_data
+      });
+    }
+      return () => {
+        bind_data = false
+      }
     },[])
-    const StackElement = () => {
-      return (
-        <><Stack direction="row" spacing={1}>
-       <Chip label="Clickable"  />
-       <Chip label="Clickable" variant="outlined"  />
-        </Stack></>
-      )
-    }
+        
+
     const handleEditable = (event) => {
-      //  event.target.firstElementChild = <StackElement/>
-      //  console.log(event)
+      
     }
-    const handleOrderChange = (id, event) => {
-        setOpen(true)
-        orderUpdate(id, event.target.value).then((res)=> {
-          setOpen(false)
-            console.log(res);
+    const handleOrderChange = (id, order_status, event) => {
+        document.getElementById(id).style.display = "inline"
+        let dynamic_status = (check)=>{
+            switch(check){
+               case 1: return 2
+               case 2: return 3
+               case 3 : return 4
+            }
+        }
+        orderUpdate(id, dynamic_status(order_status)).then((res)=> {
+          document.getElementById(id).style.display = "none"
         }).catch((error)=>{
           console.log(error)
         })
@@ -140,8 +178,46 @@ const Kitchen = () => {
         console.log(error)
       })
    }
+   // step status 
+
+   const stepStatus = () => {
+        console.log(stepStatus)
+   }
+   const handleCancel = (id) => {
+    
+     swal({
+       'icon': 'warning',
+       'buttons': true,
+       'content' : 'Are You want to cancel!',
+       'title' : 'Are You want to cancel!'
+     }).then((res)=>{
+        if(res){
+           document.getElementById(`c-${id}`).style.display = "inline"
+           orderUpdate(id, 0).then((res)=> {
+            document.getElementById(`c-${id}`).style.display = "none"
+              setOpen(false)
+              setOpen(false)
+           }).catch((error)=>{
+            document.getElementById(`c-${id}`).style.display = "none"
+             console.log(error)
+           })
+        }else{
+          console.log(false)
+        }
+     }) 
+   }
+   const handleOrderButton = (btn_id) => {
+        switch(btn_id){
+          case 1: return "confirm"
+          case 2: return "complete"
+          case 3: return "deliver"
+          case 4: return "success"
+          default: return "confirm"
+        }
+   }
     return (
-        <>        
+        <>  
+             
         <BackDrop status={open}/>
        <div ref={componentRef} className="media">
           <Invoice  content={content}/>
@@ -190,7 +266,7 @@ const Kitchen = () => {
                     <TableCell>
                         Order Date
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                         Order Status
                     </TableCell>
                 </TableRow>
@@ -219,7 +295,36 @@ const Kitchen = () => {
                         {item.created_at}
                     </TableCell>
                     <TableCell onClick={(event) => handleEditable(event)}>
-                      <FormControl sx={{width: '130px'}}>
+                      {item.id && item.order_status == 0 ?
+                      (<Stepper acticeStep="1" className="text-center">
+                         <Step>
+                            <StepLabel error={bool}>
+                              <Typography variant="p" color="error">
+                                 Order Canceled
+                              </Typography>                             
+                            </StepLabel>
+                         </Step>
+                      </Stepper>):
+                      (<Stepper color="" activeStep={item.order_status} alternativeLabel>
+                          <Step>
+                            <StepLabel> Placed <br/><Typography sx={{color: 'GrayText'}} variant="caption">{getTime(item.created_at)}</Typography> </StepLabel>
+                          </Step>
+                          <Step>
+                            <StepLabel>Confirmed <br/><Typography sx={{color: 'GrayText'}} variant="caption">{item.order_status > 1 ? getTime(item.update_confirm) : null}</Typography></StepLabel>
+                          </Step>
+                          <Step>
+                            <StepLabel>Completed <br/><Typography sx={{color: 'GrayText'}} variant="caption">{item.order_status > 2 ? getTime(item.update_complete):null}</Typography></StepLabel>
+                          </Step>
+                          <Step>
+                            <StepLabel>Delivered <br/><Typography sx={{color: 'GrayText'}} variant="caption">{item.order_status > 3 ? getTime(item.update_delivered):null}</Typography></StepLabel>
+                          </Step>
+                      </Stepper>)}
+                      {item.order_status == 0 || item.order_status == 4 ? null :
+                      (<div className="text-center mt-2">
+                          <Button size="small" id="abc" variant="outlined" className="mr-2" onClick={(event) => handleOrderChange(item.id, item.order_status, event)} color="success" sx={{position: 'relative'}}> <CircularProgress id={item.id} size={22} sx={{position: 'absolute', top: '50%', left: '50%', marginTop: '-11px', marginLeft: '-11px', display: 'none'}}/> {handleOrderButton(item.order_status)}</Button>
+                          <Button size="small" disabled={item.order_status == 4 ? true :false} variant="outlined" onClick={() => handleCancel(item.id)} sx={{position: 'relative'}}><CircularProgress id={`c-${item.id}`} size={22} sx={{position: 'absolute', top: '50%', left: '50%', marginTop: '-11px', marginLeft: '-11px', display: 'none'}}/> Cancel</Button>
+                      </div>)}
+                      {/* <FormControl sx={{width: '130px'}}>
                         <InputLabel>Order Status</InputLabel>
                       <Select label="Order Status" onChange={(event) => handleOrderChange(item.id, event)} value={item.order_status} size="small"> 
                           <MenuItem value="1">Placed</MenuItem>
@@ -227,7 +332,7 @@ const Kitchen = () => {
                           <MenuItem value="3">Complete</MenuItem>
                           <MenuItem value="0">Cancel</MenuItem>
                       </Select>
-                      </FormControl>
+                      </FormControl> */}
                     </TableCell>
                     {/* <TableCell>
                         <Button size="small" className="ml-1" onClick={() => sendData(item)}><PrintIcon/></Button>
@@ -249,6 +354,13 @@ const Kitchen = () => {
       onRowsPerPageChange={handleChangeRowsPerPage}
     />
             </TableContainer>   
+            <Context.Consumer>
+              {
+                value => {
+                   console.log(value)
+                }
+              }
+        </Context.Consumer> 
             {/* <QRCode value="https://www.google.com/search?q=G-01%2C+Raghunath+city+Mall%2C+Maal+road%2C+Almora+krispy+chicken&rlz=1C1YTUH_enIN1019IN1019&oq=G-01%2C+Raghunath+city+Mall%2C+Maal+road%2C+Almora+krispy+chicken&aqs=chrome..69i57.14958j0j7&sourceid=chrome&ie=UTF-8#lrd=0x39a0b1ee5b75e3c7:0x8e5f24bbe6c560a,1,,," renderAs="canvas"/>    */}
         </>
     )

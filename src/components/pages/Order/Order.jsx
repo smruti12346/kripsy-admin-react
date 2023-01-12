@@ -31,6 +31,7 @@ const Order = () => {
     const componentRef = useRef(null)
     const cartItems = useCart()
     //let allData = [];
+    
    
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -54,14 +55,14 @@ const Order = () => {
         },500)
      }
     useEffect(()=>{
-      let tok = jwt_decode(localStorage.getItem('token'));
-      console.log(tok);
+      // let tok = jwt_decode(localStorage.getItem('token'));
+      // console.log(tok);
       axios.get(`${url}/order?page=${page + 1}&per_page=${rowsPerPage}`).then((res)=>{
         setLinks(res.data.data.links)
         setTotal(res.data.data.total)
         setOrder(res.data.data.data)
         setData(res.data.data.data)
-        //allData.push(res.data.data.data)
+        window.order_data = res.data.data.data
       }).catch((error)=>{
          console.log(error)
       })
@@ -73,14 +74,25 @@ const Order = () => {
         })
         setOrder(searchItem)
     }
-    useMemo(()=>{
+    useEffect(()=>{
+      let pusher_data = true
      channel.bind('order-event', function(pushdata) {
-      setLinks(pushdata.order.links)
-      setTotal(pushdata.order.total)
-      setOrder(pushdata.order.data)
-      setData(pushdata.order.data)
+       if(pusher_data){
+        let pure_data = window.order_data.map((item)=>{
+          if(item.id === pushdata.order.id){
+             return pushdata.order
+          }else{
+            return item
+          }   
+       });
+        setOrder(pure_data)
+        window.order_data = pure_data
+       }
+      return () => {
+         pusher_data = false
+       }
       });     
-    },[allData])
+    },[])
     
     return (
         <>        
@@ -152,7 +164,7 @@ const Order = () => {
                         {item.customer_name}
                     </TableCell>
                     <TableCell>
-                        {JSON.parse(item.items).map((place_item ,id)=>  
+                        {item.items && JSON.parse(item.items).map((place_item ,id)=>  
                                                   <>
                                                     <p key={id}>{place_item.product_name} × <span className="text-danger">({place_item.quantity})</span></p>
                                                   {/* `${place_item.product_name}(${place_item.quantity}),` */}
@@ -167,6 +179,7 @@ const Order = () => {
                         {item.order_status === 2 ? 'Confirmed' : null}
                         {item.order_status === 3 ? 'Complete' : null}
                         {item.order_status === 0 ? 'Cancel' : null}
+                        {item.order_status === 4 ? 'Delivered' : null}
                     </TableCell>
                     <TableCell>
                         {item.created_at}
