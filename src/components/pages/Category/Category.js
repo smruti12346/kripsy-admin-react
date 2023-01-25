@@ -6,6 +6,9 @@ import { img_path } from "../../../config";
 import axios from "axios";
 import swal from "sweetalert";
 import url from "../../../config";
+import EditDialog from "./EditDialog";
+import { singleData } from "../../store";
+import { useRecoilState } from "recoil";
 const Category = () => {
 //     const data = [
 //         {name: 'rolls', image: 'abc.jpg'},
@@ -17,6 +20,10 @@ const Category = () => {
     const [count, setCount] = useState(0)
     const [open,setOpen] = useState(false)
     const [data, setData] = useState(null)
+    const [editOpen, setEditOpen] = useState(false);
+    const [ecount, setEcount] = useState(0)
+    const [id, setId] = useState(null);
+    const [single, setSingle] = useRecoilState(singleData)
     const handleOpen = () =>{
       setOpen(true)
       setCount(count + 1)
@@ -49,15 +56,23 @@ const Category = () => {
                           text: 'Category delete Success',
                           icon: 'success'
                        })
-                  }).then((error)=>{
+                  }).catch((error)=>{
                       console.log(error)
                   })
             }
         })
         
     }
+    const handleEdit = (id) => {
+        console.log('test',id)
+        console.log('fff')
+        setEditOpen(true)
+        setEcount(ecount + 1)
+        setId(id)
+    }
     return (
         <>
+        {editOpen ? (<EditDialog status={editOpen} box1={ecount} id={id}/>) : null }
           {open ? (<DialogBox status={open} box={count}/>): null  }                
         <div className="container" style={{marginTop: '80px'}}>
             <Button className="float-right" color="primary" variant="contained" size="small" onClick={handleOpen}>Add Category</Button>
@@ -91,7 +106,7 @@ const Category = () => {
                                    <img style={{width: '70px'}} src={`${img_path}/category/${item.image}`} />
                               </TableCell>
                               <TableCell>
-                                    <Button variant="outlined" size="small">Edit</Button>
+                                    <Button variant="outlined" size="small" onClick={() => handleEdit(item.id)}>Edit</Button>
                                     <Button variant="outlined" className="ml-2" size="small" onClick={() => handleDelete(item.id)}>Delete</Button>
                               </TableCell>
                            </TableRow>

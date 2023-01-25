@@ -1,6 +1,7 @@
-// import { createStore } from "react-redux";
+import { atom } from "recoil";
 
-// const store = (initialState) => {
-//     return createStore(initialState)
-// }
-// export default store
+const singleData = atom({
+    key: 'single',
+    default: ''
+})
+export {singleData}

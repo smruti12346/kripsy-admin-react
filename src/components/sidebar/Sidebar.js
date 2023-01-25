@@ -46,19 +46,23 @@ const Sidebar = () => {
         className="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion"
         id="accordionSidebar"
       >
-        <a className="sidebar-brand d-flex align-items-center" href="index.html">
+        <a className="sidebar-brand d-flex align-items-center" href="#">
           <div className="sidebar-brand-icon">
             <img src="image/favicon.ico" className="img-fluid" />
           </div>
         </a>
-
         <li className="nav-item active">
           <Link className="nav-link" to="/">
             <i className="mdi mdi-home-variant-outline"></i>
             <span>Home</span>
           </Link>
         </li>
-
+        <li className="nav-item active">
+          <Link className="nav-link" to="/dashboard">
+            <i className="mdi mdi-home-variant-outline"></i>
+            <span>Dashboard</span>
+          </Link>
+        </li>
         <li className="nav-item">
           <Link className="nav-link" to="/category">
             <i className="mdi mdi-grid-large"></i>

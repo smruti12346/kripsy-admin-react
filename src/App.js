@@ -14,14 +14,16 @@ import Order from "./components/pages/Order/Order";
 import User from "./components/pages/User/User";
 import Kitchen from "./components/pages/Kitchen/Kitchen";
 import DoorStep from "./components/pages/DoorStep/DoorStep";
-
+import Dashboard from "./components/pages/Dashboard/Dashboard";
+import { RecoilRoot } from "recoil";
 const Context = createContext(false)
 export {Context}
 function App() {
   const path = window.location.pathname;
   return (
-    <Context.Provider value="true">
+    
    <CartProvider>
+    <RecoilRoot>
     { path === "/doorstep" ?
     (<Router>
         <Routes>
@@ -54,6 +56,7 @@ function App() {
                   <Route exact path="/order" element={<Order />} />
                   <Route exact path="/user" element={<User/>} />
                   <Route exact path="/kitchen" element={<Kitchen/>} />
+                  <Route exact path="/dashboard" element={<Dashboard/>} />
                 </Routes>
               </div>
               <Footer />
@@ -62,8 +65,9 @@ function App() {
         </>
       )}
     </Router>)}
+    </RecoilRoot>
     </CartProvider>
-    </Context.Provider> 
+    
   );
 }
 
