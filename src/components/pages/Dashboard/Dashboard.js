@@ -1,16 +1,21 @@
 import React, {useEffect, useState} from 'react';
 import { getChartReport } from '../../../services/chart';
-import { Box, Tabs, Tab } from '@mui/material';
+import { Box, Tabs, Tab, TextField } from '@mui/material';
 import { Chart } from "react-google-charts";
 import axios from 'axios';
 import url from '../../../config';
 import { auth_check } from '../../../auth';
+import 'react-date-range/dist/styles.css'; // main style file
+import 'react-date-range/dist/theme/default.css'; // theme css file
 const Dashboard = () => {
   const [data, setData] = useState([]);
   const [dataDetail, setdataDetail] = useState([])
   const [value, setValue] = useState(0);
   const [title, setTitle] = useState('Annual Report');
   const [today, setToday] = useState({'total': 0, 'card': 0, 'cod': 0})
+  const [selectionRange, setSelectionRange] = useState({startDate: new Date(),endDate: new Date(),key: 'selection'})
+
+
   let month_name = ['Jan','Feb','March','Apr','May','June','July','Aug','Sept','Oct','Nov','Dec'];
   const handleChange = (event, newValue) => {
        setValue(newValue)
@@ -133,9 +138,30 @@ const Dashboard = () => {
              console.log(arr_data)
       })
      }
+     const handleSelect = (date) => {
+          console.log(date)
+          setSelectionRange(range=>({
+             startDate: range.startDate,
+             endDate: range.endDate,
+             key: 'selection'
+          }))
+     }
+   //   const selectionRange = {
+   //    startDate: new Date(),
+   //    endDate: new Date(),
+   //    key: 'selection',
+   //  }
     return (
         <>
-        <div className='container' style={{marginTop: '80px'}}>        
+        <div className='container' style={{marginTop: '80px'}}> 
+        {/* <Calendar
+        date={new Date()}
+        onChange={handleSelect}
+        />   
+        <DateRangePicker
+        ranges={[selectionRange]}
+        onChange={handleSelect}
+      />     */}
         <div className='row justify-content-center align-items-center' >
                <div class="bg-warning shadow-sm p-3 rounded mb-2 ml-2">
                  <div class="d-flex align-items-center mb-2">
@@ -180,6 +206,7 @@ const Dashboard = () => {
             <Tab label="Last Month" onClick={handlePrevMonth}/>
             <Tab label="This Month" onClick={handleThisMonth} />
             <Tab label="Last 7 Days"  onClick={handleWeek}/>
+            <Tab label="Date Range"  onClick={handleWeek}>zxfsdfsdf</Tab>
           </Tabs>
         </Box>
               <div className='row'>
