@@ -6,24 +6,26 @@ import * as Yup from 'yup'
 import { getCategory } from "../../../services/category";
 import './product.css'
 import axios from "axios";
-import url from "../../../config";
+import url, { img_path } from "../../../config";
 import BackDrop from "../../backDrop/BackDrop";
-
+import { useRecoilState } from "recoil";
+import { productData, productEditDialog } from "../../store";
+import { getProduct } from "../../../services/product";
+import { useRecoilValue } from "recoil";
 const EditProductDialog = (props) => {
-    const [open, setOpen] = useState(true)
+    const [open, setOpen] = useRecoilState(productEditDialog)
     const [category, setCategory] = useState(null)
     const [slug, setSlug] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [id,setId] = useState(null)
-    const [data, setData] = useState({})
-    useEffect(()=>{
-       setOpen(!open)  
-    },[props.status])
+    const [data, setData] = useState([])
+    const [isUpdate, setisUpdate] = useState(false);
+    const [product, setProduct] = useRecoilState(productData)
     useEffect(()=>{
        setIsLoading(true)
-       setData({})
+       setData([])
         if(props.id !== null){
-             axios.get(`${url}/product/${props.id}`).then((res)=>{
+            axios.get(`${url}/product/${props.id}`).then((res)=>{
                 setData(res.data.data)
                 setIsLoading(false)
             }).catch((error)=>{
@@ -33,7 +35,7 @@ const EditProductDialog = (props) => {
         }else{
          setIsLoading(false)
         }
-    },[props.status])
+    },[props.status,isUpdate])
     const handleClose = () => {
          setOpen(false)
     }
@@ -51,8 +53,8 @@ const EditProductDialog = (props) => {
       .replace(/[\s_-]+/g, '-')
       .replace(/^-+|-+$/g, '');
     useEffect(()=>{
-       getCategory.then((res)=>{
-          setCategory(res.data.result)
+       getCategory().then((res)=>{
+          setCategory(res)
        }).catch((error)=>{
           console.log(error)
        })
@@ -72,7 +74,7 @@ const EditProductDialog = (props) => {
         enableReinitialize: true,
         validationSchema: Yup.object({
             product_name: Yup.string().min(3).required().label('Product Name'),
-            slug: Yup.string().min(3).required(),
+            slug: Yup.string().min(3),
             description: Yup.string(),
             price: Yup.string('price must be a number').matches(/^[0-9]+$/ ,'Please enter correct price').required(),
             sale_price: Yup.string('sale price must be a number').matches(/^[0-9]+$/ ,'Please enter correct price').required().label('Sale Price'),
@@ -82,7 +84,7 @@ const EditProductDialog = (props) => {
             category_id: Yup.number().required().label('category id')
         }),
         onSubmit: (values) => {
-         setIsLoading(true)
+           setIsLoading(true)
            let formData = new FormData()
            formData.append('product_name', values.product_name)
            formData.append('slug',values.slug)
@@ -97,6 +99,24 @@ const EditProductDialog = (props) => {
            //formData.append('method', 'POST')
 
            axios.post(`${url}/product/${props.id}`, formData).then((res)=>{
+            console.log(res)
+            //after update product refetch from database and set in recoil state
+                 if(res.data.message === "This product name already exists"){
+                  swal({
+                     title: 'Error',
+                     text: 'This product name already exists!',
+                     icon: 'error',
+                     button: 'OK'
+                   }) 
+                 }else{
+                      setisUpdate(true)
+                      axios.get(`${url}/product`).then((res)=>{
+                        setProduct(res.data.data)
+                     }).catch((err)=>{
+                        console.log(err)
+                     })
+                 }
+                      
             setOpen(false)
             setIsLoading(false)
                console.log(res)
@@ -107,7 +127,7 @@ const EditProductDialog = (props) => {
                   button: 'OK'
                 }).then((response)=>{
                   if(response){
-                     window.location.href = '/products'
+                      
                   }
                 })
                 console.log(res)
@@ -119,15 +139,14 @@ const EditProductDialog = (props) => {
         },
     })
     const handleProductName = (event) => {
-      formik.values.slug = event.target.values
-      setSlug(slugify(event.target.value))
-      return formik.values.slug = slugify(event.target.value)
-     
+      //formik.values.slug = event.target.values
+      //setSlug(slugify(event.target.value))
+       //formik.values.product_name(event.target.value)
+       //formik.values.slug(slugify(event.target.value))
+       formik.setFieldValue('slug', slugify(event.target.value)) 
     }
     const handleProductAdd = () => {
-       formik.handleSubmit();
-       console.log(formik)
-        
+       formik.handleSubmit();       
      }
     return (
         <>
@@ -138,10 +157,10 @@ const EditProductDialog = (props) => {
              </DialogTitle>
              <DialogContent className="py-3">
                  <div className="d-flex mb-2">
-                   <TextField label="product name" value={formik.values.product_name} sx={{maxWidth: 222,}} name="product_name" onChange={ (event) => {
+                   <TextField label="product name" id="product_name" value={formik.values.product_name} sx={{maxWidth: 222,}} name="product_name" onChange={ (event) => {
                       formik.handleChange(event) 
-                      handleProductName(event)}
-                      } size="small" helperText={formik.errors.product_name}/>
+                      handleProductName(event)
+                     }} size="small" helperText={formik.errors.product_name}/>
                    <TextField label="slug" size="small" value={formik.values.slug} name="slug" className="ml-2" onChange={formik.handleChange} helperText={formik.errors.slug}/> 
                  </div>
                  <div className="d-flex mb-2">
@@ -176,8 +195,9 @@ const EditProductDialog = (props) => {
                   </div>   
                   <div className="mx-auto mt-4 text-center">
                     <input type="file" name="image" id="file" className="d-none" onChange={(event) => formik.setFieldValue('image', event.target.files[0])}/>
-                    <Button onClick={handleUpload} variant="contained" color="info" className="mx-auto" size="small">Upload Image</Button>  
-                    <p className="text-center">{formik.values.image}</p>
+                    <Button onClick={handleUpload} variant="contained" color="info" className="mx-auto" size="small">Upload Image</Button> <br/>
+                    <img src={formik.values.image.name ? `${URL.createObjectURL(formik.values.image)}` : formik.values.image && `${img_path}/product/${formik.values.image}`} style={{height: '60px'}} /> 
+                    <p className="text-center">{formik.values.image.name ? `${formik.values.image.name}` : `${formik.values.image}`}</p>                   
                     <FormHelperText className="text-center">{formik.errors.image}</FormHelperText>
                   </div>              
              </DialogContent>

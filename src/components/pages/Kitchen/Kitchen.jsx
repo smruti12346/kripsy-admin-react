@@ -1,29 +1,20 @@
-import { Stack,Chip, Table, TableBody, TableCell, TableContainer, TableRow,Button,InputLabel, TableHead, TextField, TablePagination, TableFooter, Select, ListItem, MenuItem, FormControl, Typography, LinearProgress, CircularProgress } from "@mui/material";
-import React, {useState, useEffect, useMemo, useRef, useReducer, useContext} from "react";
-import { initialState, useCart } from "react-use-cart";
+import { Table, TableBody, TableCell, TableContainer, TableRow,Button, TableHead, TablePagination, TableFooter, Typography, CircularProgress } from "@mui/material";
+import React, {useState, useEffect,  useRef, useReducer, useContext} from "react";
+import { useCart } from "react-use-cart";
 import url from "../../../config";
 import axios from "axios";
-import PrintIcon from '@mui/icons-material/Print';
 import Invoice from "../../Invoice/Invoice";
-import ReactToPrint,{ useReactToPrint } from "react-to-print";
+import { useReactToPrint } from "react-to-print";
 import BackDrop from "../../backDrop/BackDrop";
-import ThermalPrint from "../../thermalPrint/ThermalPrint";
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
-import QRCode from 'qrcode.react';
 import {channel} from '../../../services/pusher'
 import { orderUpdate } from "../../../services/order";
-import auth from "../../../auth";
 import { Step, StepLabel, Stepper } from "@material-ui/core";
 import './kitchen.css'
 import swal from "sweetalert";
 import { Context } from "../../../App";
-const reducer = (accum, action) => {
-   switch(action){
-      case 1 : return accum += "confirm"
-      case 2 : return accum  += "complete"
-      default: return accum += "confirm"
-   }
-}
+import { auth_check } from "../../../auth";
+
 const Kitchen = () => {   
     const [path, setPath] = useState(false)
     const [open, setOpen] =useState(false)
@@ -42,12 +33,6 @@ const Kitchen = () => {
     const [top, setTop] = useState('80px')
    //pagination end
    // reducer hook for stepper
-    let initialState = 1
-    let total_count
-    let page_count
-    let rowsPerPage_count
-
-    const [state, dispatch] = useReducer(reducer,initialState)
 
    const styles = {
     borderBottomGreen: {
@@ -55,12 +40,17 @@ const Kitchen = () => {
        'borderTop' : '1px solid green',
     },
  }
-    const componentRef = useRef(null)
-    const cartItems = useCart()
 
-    const reference = useRef()
-    //let allData = [];
-   
+   useEffect(() => {
+    auth_check.then((res)=>{
+        if(res.data.user.type === 1 || res.data.user.type === 2){
+          return true
+        }else{
+         window.location.href = '/login'
+        } 
+     })  
+   }, []);
+    const componentRef = useRef(null)
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -84,7 +74,7 @@ const Kitchen = () => {
      }
      useEffect(()=>{
         if(window.location.pathname === '/sub-admin/kitchen'){
-          setTop('10px')
+          setTop('80px')
           setPath(true)
         }else{
           setPath(false)
@@ -223,10 +213,6 @@ const Kitchen = () => {
           <Invoice  content={content}/>
        </div>
          <div className="container" style={ {marginTop: top}}>
-          {path ? 
-            (<div className="mt-4">
-               <Button variant="outlined" onClick={logout}>Logout</Button>
-            </div>): null}
             <form className="d-none d-sm-inline-block form-inline mx-2 my-2 my-md-0 mw-100 navbar-search float-right" >
               <div className="input-group">
                 {/* <TextField label="search by number" onChange={(event) => handleSearch(event)} size="small" placeholder="Ex: 1234567890"/> */}

@@ -7,39 +7,25 @@ import axios from "axios";
 import swal from "sweetalert";
 import url from "../../../config";
 import EditDialog from "./EditDialog";
-import { singleData } from "../../store";
+import { categoryData } from "../../store";
 import { useRecoilState } from "recoil";
+import { isLoading } from "../../store";
 const Category = () => {
-//     const data = [
-//         {name: 'rolls', image: 'abc.jpg'},
-//         {name: 'rolls', image: 'abc.jpg'},
-//         {name: 'rolls', image: 'abc.jpg'},
-//         {name: 'rolls', image: 'abc.jpg'},
-//         {name: 'rolls', image: 'abc.jpg'},        
-//     ]
     const [count, setCount] = useState(0)
     const [open,setOpen] = useState(false)
-    const [data, setData] = useState(null)
+    const [data, setData] = useRecoilState(categoryData)
     const [editOpen, setEditOpen] = useState(false);
     const [ecount, setEcount] = useState(0)
     const [id, setId] = useState(null);
-    const [single, setSingle] = useRecoilState(singleData)
+    const [loading, setLoading] = useRecoilState(isLoading)
     const handleOpen = () =>{
       setOpen(true)
       setCount(count + 1)
     }
-    const handleChangePage = () => {
-      console.log('handle change')
-    }
-    const handleChangeRowsPerPage = () => {
-        console.log('handle change');
-    }
     useEffect(()=>{
-      getCategory.then((res)=>{
-          setData(res.data.result)
-      }).catch((error)=>{
-            console.log(error)
-      }) 
+        getCategory().then((data)=>{
+            setData(data)
+        })
     },[])
     const handleDelete = (id) => {
         swal({
@@ -48,6 +34,7 @@ const Category = () => {
             buttons: true
         }).then((bool)=>{
             if(bool){
+                 setLoading(true)
                   axios.delete(`${url}/category/${id}`).then((res)=> {
                         setData(data.filter((item)=>{
                              return item.id != id 
@@ -56,16 +43,15 @@ const Category = () => {
                           text: 'Category delete Success',
                           icon: 'success'
                        })
+                       setLoading(false)
                   }).catch((error)=>{
+                      setLoading(false )
                       console.log(error)
                   })
             }
-        })
-        
+        })       
     }
     const handleEdit = (id) => {
-        console.log('test',id)
-        console.log('fff')
         setEditOpen(true)
         setEcount(ecount + 1)
         setId(id)
@@ -93,7 +79,7 @@ const Category = () => {
                             Action
                       </TableCell>
                    </TableRow>
-                    {data && data.map((item, id)=>
+                    {data.length > 0 && data.map((item, id)=>
                         (
                               <TableRow key={id}>
                               <TableCell>
@@ -115,14 +101,6 @@ const Category = () => {
                    
                 </TableBody>
                 <TableFooter>
-                   <TablePagination 
-                   rowsPerPageOptions={[10, 25, 101]}
-                   rowsPerPage={1}
-                   page={2}
-                   onPageChange={handleChangePage}
-                   onRowsPerPageChange={handleChangeRowsPerPage}
-                   >    
-                   </TablePagination>
                 </TableFooter>
             </Table>
          </TableContainer>

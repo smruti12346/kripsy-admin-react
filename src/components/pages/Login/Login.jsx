@@ -15,10 +15,12 @@ const Login = () => {
     useEffect(()=>{
        if(auth){
           auth_check.then((res)=>{
-             if(res.data.user.type == 1){
+             if(res.data.user.type === 1){
                   window.location.href = "/"
-             }else if(res.data.user.type == 2){
+             }else if(res.data.user.type === 2){
                   window.location.href = "/sub-admin/kitchen"
+             }else if(res.data.user.type === 3){
+                  window.location.href = "/accounts"
              }
           }).then((error)=>{
               console.log(error)
@@ -44,7 +46,7 @@ const Login = () => {
            setOpen(true)
            setCount(count + 1)
            axios.post(`${url}/login`, {email: values.user_email, password: values.password}).then((res)=>{
-              console.log(res)   
+              //console.log(res)   
               // if(res.data.user.type == 2){
               //     window
               // }            
@@ -60,12 +62,13 @@ const Login = () => {
                if(res.data.success){
                   if(res.data.user.type == 2){
                     return window.location.href = "/sub-admin/kitchen"
-                  }else if(res.data.user.type == 1){
+                  }else if(res.data.user.type === 1){
                     return window.location.href = "/"
+                  }else if(res.data.user.type === 3){
+                    window.location.href = "/accounts"
                   }else{
-                     console.log('else statement of login component')
-                  }
-                  
+                    console.log('else statement of login component')
+                  }                  
                }
            }).catch((error)=>{
               if(error.response.data.success === false){

@@ -14,11 +14,11 @@ const Home = () => {
    const [qty, setQty] = useState()
    const [catSticky, setCatSticky] = useState(false)
    useEffect(()=>{
-     getCategory.then((res)=>{
-          setCategory(res.data.result)
+     getCategory().then((res)=>{
+          setCategory(res)
      }) 
-     getProduct.then((res)=>{
-       setProduct(res.data.data)
+     getProduct().then((res)=>{
+       setProduct(res)
      })  
    },[])
    const toTitleCase = (text) => {

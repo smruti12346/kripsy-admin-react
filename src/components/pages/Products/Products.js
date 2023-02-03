@@ -8,38 +8,46 @@ import swal from "sweetalert";
 import axios from 'axios'
 import BackDrop from "../../backDrop/BackDrop";
 import EditProductDialog from "./EditProductDialog";
+import { useRecoilState } from "recoil";
+import { productAddDialog, productData, productEditDialog } from "../../store";
 const Products = () => {
-    const [data, setData] = useState()
-    const [category, setCategory] = useState()
-    const [open,setOpen] = useState(false)
-    const [editOpen, setEditOpen] = useState(false)
+    const [data, setData] = useRecoilState(productData)
+    const [category, setCategory] = useState(null)
+    const [open,setOpen] = useRecoilState(productAddDialog)
+    const [editOpen, setEditOpen] = useRecoilState(productEditDialog)
     const [isLoading,setIsLoading] = useState(false)
     const [status, setStatus] = useState(false)
     const [count, setCount] = useState(0)
     const [editId, setEditId] = useState(null);
-    useEffect(()=>{     
-         getProduct.then((res)=>{
+    useEffect(()=>{ 
+        let avd = true
+        if(avd){  
+         axios.get(`${url}/product`).then((res)=>{
             setIsLoading(false)
             setData(res.data.data)
          }).catch((err)=>{
             setIsLoading(false)
             console.log(err)
          })
-         getCategory.then((res)=>{
-            setCategory(res.data.result)
+         getCategory().then((res)=>{
+            setCategory(res)
          }).catch((error)=>{
             console.log(error)
          })
-    },[count])
+        }
+        return () => {
+            avd = false
+        }
+    },[])
     useEffect(()=>{
         setIsLoading(false) 
     },[])
     const handleProductAdd = () => {
-        setOpen(!open)   
+        setOpen(true)   
     }
     const handleEdit = (id) => {
         setEditId(id)
-        setEditOpen(!editOpen)
+        setEditOpen(true)
         setCount(count + 1)
         //console.log(id)
         setStatus(true)
@@ -80,9 +88,14 @@ const Products = () => {
     }
     return (
         <>
-        <EditProductDialog status={editOpen} id={editId}/>
-        <BackDrop status={isLoading}/>
-          <AddProductDialog status={open} count={count}/>
+         {editOpen ?
+          (<EditProductDialog id={editId}/>): null
+         }
+          <BackDrop status={isLoading}/>
+          {open ? 
+            (<AddProductDialog count={count}/>): null
+         }
+          
           <div className="container" style={{marginTop: '80px'}}>
           <Button className="float-right" color="primary" variant="contained" onClick={handleProductAdd} size="small">Add Product</Button>
               <TableContainer>
@@ -117,7 +130,7 @@ const Products = () => {
                                 Action
                             </TableCell>
                          </TableRow>
-                         {data && data.map((item, id)=> 
+                         {data.length > 0 && data.map((item, id)=> 
                          (<TableRow>
                             <TableCell>
                                {id + 1}

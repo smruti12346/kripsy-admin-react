@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableContainer, TableRow,Button, TableHead, TextField, TablePagination, TableFooter } from "@mui/material";
 import React, {useState, useEffect, useMemo} from "react";
 import { useCart } from "react-use-cart";
-import url from "../../../config";
+import url, { axiosInstance } from "../../../config";
 import axios from "axios";
 import PrintIcon from '@mui/icons-material/Print';
 import Invoice from "../../Invoice/Invoice";
@@ -55,17 +55,20 @@ const Order = () => {
         },500)
      }
     useEffect(()=>{
+      let token = localStorage.getItem('token')
+      let exp = jwt_decode(token).exp
+      console.log(exp > new Date().getTime()/1000)
       // let tok = jwt_decode(localStorage.getItem('token'));
       // console.log(tok);
-      axios.get(`${url}/order?page=${page + 1}&per_page=${rowsPerPage}`).then((res)=>{
+
+      axiosInstance.get(`/order?page=${page + 1}&per_page=${rowsPerPage}`).then((res)=>{
         setLinks(res.data.data.links)
         setTotal(res.data.data.total)
         setOrder(res.data.data.data)
         setData(res.data.data.data)
-        window.order_data = res.data.data.data
-      }).catch((error)=>{
-         console.log(error)
+        window.order_data = res.data.data.data 
       })
+     
     },[rowsPerPage, page])
     const handleSearch = (event) => {
         let search = event.target.value
@@ -144,6 +147,12 @@ const Order = () => {
                         Order Status
                     </TableCell>
                     <TableCell>
+                        Payment Mode
+                    </TableCell>
+                    <TableCell>
+                        Order Type
+                    </TableCell>
+                    <TableCell>
                         Order Date
                     </TableCell>
                     <TableCell className="text-center">
@@ -180,6 +189,16 @@ const Order = () => {
                         {item.order_status === 3 ? 'Complete' : null}
                         {item.order_status === 0 ? 'Cancel' : null}
                         {item.order_status === 4 ? 'Delivered' : null}
+                    </TableCell>
+                    <TableCell>
+                      {item.payment_mode === 1 ? 'COD' : null}
+                      {item.payment_mode === 2 ? 'CARD' : null}
+                    </TableCell>
+                    <TableCell>
+                      <p className={item.order_type === 2 ? 'text-danger' : null}>
+                      {item.order_type === 1 ? 'INNER' : null}
+                      {item.order_type === 2 ? 'OUTER' : null}
+                      </p>
                     </TableCell>
                     <TableCell>
                         {item.created_at}

@@ -15,19 +15,21 @@ import User from "./components/pages/User/User";
 import Kitchen from "./components/pages/Kitchen/Kitchen";
 import DoorStep from "./components/pages/DoorStep/DoorStep";
 import Dashboard from "./components/pages/Dashboard/Dashboard";
-import { RecoilRoot } from "recoil";
+import { RecoilRoot} from "recoil";
+import BackDrop from "./components/backDrop/BackDrop";
+import LogoutBar from "./components/logoutBar/LogoutBar";
 const Context = createContext(false)
 export {Context}
 function App() {
   const path = window.location.pathname;
-  return (
-    
+  return (    
    <CartProvider>
     <RecoilRoot>
+     <BackDrop/>  
     { path === "/doorstep" ?
     (<Router>
         <Routes>
-            <Route exact path="doorstep" element={<DoorStep/>}/>
+            <Route exact path="doorstep" element={<DoorStep/>}/>          
         </Routes>
     </Router>):
     (<Router>
@@ -37,10 +39,14 @@ function App() {
       {path === "/login" ? null : (
         <>
         {
-          path == "/sub-admin/kitchen" ? (
+          path == "/sub-admin/kitchen" ||  path === '/accounts' ? (
+            <>
+             <LogoutBar/>
             <Routes>
                 <Route exact path="/sub-admin/kitchen" element={<Kitchen/>}/>
+                <Route exact path="/accounts" element={<Dashboard/>}/>
             </Routes>
+            </>
           )
         :
           (<div id="wrapper">
@@ -66,8 +72,7 @@ function App() {
       )}
     </Router>)}
     </RecoilRoot>
-    </CartProvider>
-    
+    </CartProvider>    
   );
 }
 

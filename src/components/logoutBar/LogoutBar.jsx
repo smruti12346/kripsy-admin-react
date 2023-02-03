@@ -6,44 +6,26 @@ import { Badge } from "@mui/material";
 import { useCart } from "react-use-cart";
 import auth, {auth_check} from "../../auth";
 import jwt_decode from "jwt-decode";
-const Navbar = () => {
-  const [check, setCheck] = useState(false)
-  const [btn, setBtn] = useState(1)
-  const cartItems = useCart()
-  const count = cartItems.totalItems
-  const openCart = () => {
-     setCheck(true)
-     setBtn(btn + 1)
-  }
-  useEffect(() => {
-    let token = localStorage.getItem('token')
-    let exp = jwt_decode(token).exp
-    console.log('exp',exp)
-    console.log('new date', new Date().getDate()/1000)
-    if(exp < new Date().getTime()/1000){
-      window.location.href = "login"
+import { isLoading } from "../store";
+import axios from 'axios'
+import url from "../../config";
+import { useRecoilState } from "recoil";
+const LogoutBar = () => {
+    const [loading, setLoading] = useRecoilState(isLoading)
+    const handleLogout = () => {
+        setLoading(true)
+        let token = localStorage.getItem('token')
+        axios.post(`${url}/logout`,{'token': token}).then((res)=>{
+            setLoading(false)
+            localStorage.removeItem('token')
+            window.location.href = "/"        
+          }).catch((error)=>{
+            console.log(error)
+          })
     }
-    if(auth){
-      auth_check.then((res)=>{
-         if(res.data.user.type == 1){
-             console.log('reson too many request')
-            //  window.location.href = "/"
-         }else if(res.data.user.type == 2){
-              window.location.href = "/sub-admin/kitchen"
-         }
-      }).then((error)=>{
-          console.log(error)
-      })
-      
-   }else{
-      console.log('false')
-   }
-   
-  }, []);
-  return (
-    <>
-      <CartModal cart={check} btn={btn}/>
-      <nav className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow-sm osahan-nav-top fixed-top">
+    return (
+        <>
+          <nav className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow-sm osahan-nav-top fixed-top">
         <button
           id="sidebarToggleTop"
           className="btn btn-link d-md-none rounded-circle mr-3"
@@ -86,26 +68,17 @@ const Navbar = () => {
 
         <div className="ml-auto">
           <a
-            href="#"
-            className="btn btn-primary "
-            data-toggle="modal"
-            data-target="#filtersModal"
-          >  
-          <FilterListIcon />        
-          </a>
-          <a
-            onClick={openCart}
-            className="btn btn-danger ml-2"
+            onClick={handleLogout}
+            className="btn btn-primary ml-2 text-white"
             data-toggle="modal"
             data-target="#cartModal"
           >
-            <Badge badgeContent={count} color="primary">
-              <ShoppingCartOutlinedIcon style={{color: '#fff'}}/>
-            </Badge>
+           Logout 
           </a>
         </div>
-      </nav>
-    </>
-  );
-};
-export default Navbar;
+      </nav>   
+        </>
+    );
+}
+
+export default LogoutBar;

@@ -8,6 +8,8 @@ import BackDrop from "../backDrop/BackDrop";
 import axios from "axios";
 import url from "../../config";
 import swal from "sweetalert";
+import { useRecoilValue } from "recoil";
+import { tipStore } from "../store";
 const CheckoutModal = (props) => {
     const cartItems = useCart()
     const [open, setOpen] = useState(false)
@@ -15,6 +17,7 @@ const CheckoutModal = (props) => {
     const [codStatus, setCodStatus] = useState(true)
     const [paypalStatus, setPaypalStatus] = useState(false)
     const [dropStatus, setDropStatus] = useState(false)
+    const tip = useRecoilValue(tipStore)
     const formik = useFormik({
       initialValues: {
         name_cod: '',
@@ -38,6 +41,7 @@ const CheckoutModal = (props) => {
              swal("Placed!", "You order is successfully placed!", "success");
              cartItems.emptyCart()
              formik.values.mobile_cod = ''
+             formik.resetForm()
          }).catch((error)=>{
              console.log(error);
          })
@@ -199,7 +203,7 @@ const CheckoutModal = (props) => {
             </div>
             <div className="modal-footer justify-content-start">
               <a onClick={codStatus ? formik.handleSubmit : null} className="btn btn-primary btn-block text-white">
-                Confirm payment (₹ {parseFloat(cartItems.cartTotal) + parseFloat(cartItems.cartTotal * 5/100)})
+                Confirm payment (₹ {(Number(cartItems.metadata && cartItems.metadata.subTotal) + Number(tip)).toFixed(2)})
               </a>
             </div>
           </div>

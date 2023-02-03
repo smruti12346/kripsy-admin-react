@@ -5,8 +5,15 @@ import { useFormik } from "formik";
 import * as Yup from 'yup'
 import axios from "axios";
 import url from "../../../config";
+import { useRecoilState } from "recoil";
+import { categoryData } from "../../store";
+import { getCategory } from "../../../services/category";
+import { isLoading } from "../../store";
+import swal from "sweetalert";
 const DialogBox = (props) => {
     const [open, setOpen] = useState(true)
+    const [category, setCategory] = useRecoilState(categoryData)
+    const [loading, setLoading] = useRecoilState(isLoading)
     const handleClose = () => {
        setOpen(false)
     }
@@ -27,12 +34,39 @@ const DialogBox = (props) => {
           image: Yup.string().required()
        }),
        onSubmit: (values) => {
+            setLoading(true)
             let form = new FormData();
             form.append('cat_name',values.cat_name)
             form.append('image', values.image)
               axios.post(`${url}/category`,form).then((res)=> {
-
+                  if(res.data.status === 201){
+                     swal({
+                        title: 'Error',
+                        icon: 'error',
+                        text: 'This category name already exist!'
+                     })
+                  }else if(res.data.status === 200){
+                     swal({
+                        title: 'Success',
+                        icon: 'success',
+                        text: 'Category added success!'
+                     })
+                  }else{
+                     swal({
+                        title: 'Error',
+                        icon: 'error',
+                        text: 'Error ocured!'
+                     })
+                  }
+                  formik.resetForm()
+                  setOpen(false)
+                  setLoading(false)
+                  getCategory().then((response)=>{
+                     setCategory(response)
+                  })
               }).catch((error)=>{
+               setOpen(false)
+               setLoading(false)
                  console.log(error)
               })
        }
@@ -43,7 +77,7 @@ const DialogBox = (props) => {
              <DialogTitle className="text-center bg-light">Add Category</DialogTitle>
              <DialogContent className="p-4">
                   <TextField name="cat_name" variant="filled" label="Category Name" onChange={formik.handleChange} className="m-2" helperText={formik.errors.cat_name && formik.errors.cat_name}/><br/>
-                  <input type="file" name="image" className="d-none" id="image" onChange={formik.handleChange}/>
+                  <input type="file" name="image" className="d-none" id="image" onChange={(event) => formik.setFieldValue('image', event.target.files[0])}/>
                   <div className="text-center">
                   <Button variant="contained" size="small" onClick={handleInput}>Upload Image</Button>
                   <p className="text-danger">{formik.errors.image && formik.errors.image}</p>

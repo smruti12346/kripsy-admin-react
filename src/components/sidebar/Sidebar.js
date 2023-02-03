@@ -41,7 +41,6 @@ const Sidebar = () => {
   }
   return (
     <>
-      <BackDrop status={open}/>
       <ul
         className="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion"
         id="accordionSidebar"
