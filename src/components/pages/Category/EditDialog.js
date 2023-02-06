@@ -50,12 +50,14 @@ const EditDialog = (props) => {
            image: Yup.string()
         }),
         onSubmit: (values) => {
+            console.log(values)
             setLoading(true)
              let form = new FormData();
              form.append('cat_name',values.cat_name)
              form.append('image', values.image)
              form.append('_method', 'put')
                axios.post(`${url}/category/${props.id}`,form).then((res)=> { 
+               console.log(res)
                 if(res.data.status === 200){
                     swal({
                         title: 'Success',

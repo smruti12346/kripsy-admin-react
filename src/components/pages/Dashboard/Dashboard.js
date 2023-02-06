@@ -5,8 +5,11 @@ import { Chart } from "react-google-charts";
 import axios from 'axios';
 import url from '../../../config';
 import { auth_check } from '../../../auth';
-import 'react-date-range/dist/styles.css'; // main style file
-import 'react-date-range/dist/theme/default.css'; // theme css file
+import './Dashboard.css'
+// import 'react-date-range/dist/styles.css'; // main style file
+// import 'react-date-range/dist/theme/default.css'; // theme css file
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 const Dashboard = () => {
   const [data, setData] = useState([]);
   const [dataDetail, setdataDetail] = useState([])
@@ -14,8 +17,14 @@ const Dashboard = () => {
   const [title, setTitle] = useState('Annual Report');
   const [today, setToday] = useState({'total': 0, 'card': 0, 'cod': 0})
   const [selectionRange, setSelectionRange] = useState({startDate: new Date(),endDate: new Date(),key: 'selection'})
-
-
+  const [dateRange, setDateRange] = useState([null, null]);
+  const [startDate, endDate] = dateRange;
+  const [isShowRange, setIsShowRange] = useState(false)
+  const convertDate = (date) => {
+     if(date){
+       return `${date.getMonth()}-${date.getDate()}-${date.getFullYear()}`
+     }   
+  }
   let month_name = ['Jan','Feb','March','Apr','May','June','July','Aug','Sept','Oct','Nov','Dec'];
   const handleChange = (event, newValue) => {
        setValue(newValue)
@@ -151,6 +160,35 @@ const Dashboard = () => {
    //    endDate: new Date(),
    //    key: 'selection',
    //  }
+   const handleDateRange = (update) => {
+      
+      setDateRange(update);
+      if(update[1] != null){
+         setTitle(`Range Report`)
+         axios.post(`${url}/search-report`, {'start': update[0], 'end': update[1]}).then((res)=> {
+            console.log(res)
+            setData(res.data.data)
+            let month = new Date().getMonth() + 1
+           let newData = res.data.data.filter((item)=>{
+               return  item
+            })
+            console.log(newData)
+            let month_name = ['Jan','Feb','March','Apr','May','June','July','Aug','Sept','Oct','Nov','Dec'];
+           const arr_data = newData.map((item)=>{
+               return [String(item.month+"-"+item.day),Number(item.total_sales)]
+            })
+            
+            arr_data.unshift([`${month_name[new Date().getMonth()]} Month report for ${new Date().getFullYear()}`,'Sales'])
+            setdataDetail(arr_data)
+            console.log(arr_data)
+         })
+      }
+   }
+
+   const handlePicker = () => {
+      setIsShowRange(true)
+      //document.getElementById('dp').click()
+   }
     return (
         <>
         <div className='container' style={{marginTop: '80px'}}> 
@@ -206,11 +244,32 @@ const Dashboard = () => {
             <Tab label="Last Month" onClick={handlePrevMonth}/>
             <Tab label="This Month" onClick={handleThisMonth} />
             <Tab label="Last 7 Days"  onClick={handleWeek}/>
-            <Tab label="Date Range"  onClick={handleWeek}>zxfsdfsdf</Tab>
+            <Tab label="RANGE SELECT" onClick={handlePicker}>
+            
+            </Tab>
           </Tabs>
+         
         </Box>
               <div className='row'>
-                 <div className='col-12'>                 
+                 <div className='col-12'>
+                  <div style={{width: '250px'}} className="mx-auto mb-3">
+                 { isShowRange ?
+                 (<DatePicker
+                   placeholderText='Select date Range'
+                  selectsRange={true}
+                  startDate={startDate}
+                  endDate={endDate}
+                  onChange={(update) => {
+                   handleDateRange(update)
+                  }}
+                  isClearable={true}
+                  id="dp"
+                  />) : null}
+                  </div>
+                 </div>
+
+                 <div className='col-12'> 
+                       
                     <Chart
                   chartType="AreaChart"
                   data={dataDetail}
