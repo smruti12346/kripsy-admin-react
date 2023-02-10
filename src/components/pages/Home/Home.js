@@ -13,6 +13,7 @@ const Home = () => {
    const [cart, setCart] = useState({})
    const [qty, setQty] = useState()
    const [catSticky, setCatSticky] = useState(false)
+
    useEffect(()=>{
      getCategory().then((res)=>{
           setCategory(res)
@@ -35,6 +36,7 @@ const Home = () => {
       }else{
         setCatSticky(false)
       }
+      console.log(window.Razorpay)
     }
    },[])
    
