@@ -18,6 +18,7 @@ const CheckoutModal = (props) => {
     const [codStatus, setCodStatus] = useState(true)
     const [paypalStatus, setPaypalStatus] = useState(false)
     const [dropStatus, setDropStatus] = useState(false)
+    const [paymentId, setPaymentId] = useState(null)
     const [chips, setChips] = useState([
       {
         id: 1,
@@ -51,7 +52,14 @@ const CheckoutModal = (props) => {
       label: 'razorpay',
       status: false,
       payment_mode: 4,
-    }])
+    },
+    {
+      id: 6,
+      label: 'cash',
+      status: true,
+      payment_mode: 1,
+    }
+  ])
     
     //cleat state
     const clearState = () => {
@@ -91,10 +99,27 @@ const CheckoutModal = (props) => {
           label: 'razorpay',
           status: false,
           payment_mode: 4,
-        }])
+        },
+        {
+          id: 6,
+          label: 'cash',
+          status: true,
+          payment_mode: 1,
+        }
+      ])
     }
+    //use effect hook use for Razorpay payment id set
+    useEffect(() => {
+      if(paymentId != null){
+         console.log('notequalnull')
+        formik.handleSubmit() 
+      }
+      return () => {
+        console.log('returnvalue')
+        setPaymentId(null)
+      };
+    }, [paymentId]);
     const tip = useRecoilValue(tipStore)
-
     const formik = useFormik({
       initialValues: {
         name_cod: '',
@@ -118,9 +143,11 @@ const CheckoutModal = (props) => {
             customer_name: values.name_cod,
             customer_number: values.mobile_cod,
             items: JSON.stringify(cartItems.items),
-            total_cost: cartItems.cartTotal,
+            total: cartItems.cartTotal,
+            total_cost: (Number(cartItems.metadata && cartItems.metadata.subTotal) + Number(tip)).toFixed(2),
             order_type: values.order_type,
-            payment_mode: values.payment_mode
+            payment_mode: values.payment_mode,
+            payment_id: paymentId
          }
          axios.post(`${url}/order`, data).then((res)=>{
              setDropStatus(false)
@@ -189,7 +216,7 @@ const CheckoutModal = (props) => {
     let filter_data = payments.filter((it)=>{
       return it.id == id
    })   
-     formik.setFieldValue('payment_mode', `${filter_data[0].payment_mode}`)   
+  formik.setFieldValue('payment_mode', `${filter_data[0].payment_mode}`)   
   setPayments(payments.map((item)=>{
          if(item.id === id){
            return {
@@ -220,17 +247,21 @@ const CheckoutModal = (props) => {
    }
 
   const handleOnline = (total) => {
- 
+    console.log(Number(total))
     let rzp1 = new window.Razorpay(
       {
         "key": "rzp_test_2Jq34QAc0piYIr", // Enter the Key ID generated from the Dashboard
-        "amount": (total * 100), // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+        "amount": Math.round(total * 100), // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
         "currency": "INR",
         "name": "Krispy Chicken",
         "description": "Test Transaction",
         "image": "https://example.com/your_logo",
         "handler": function (response){
-            formik.handleSubmit()
+             if(response.razorpay_payment_id){
+               setPaymentId(response.razorpay_payment_id)                 
+             }else{
+                alert('error ocured');
+             }            
         },
         "prefill": {
             "name": "example",
@@ -275,89 +306,7 @@ const CheckoutModal = (props) => {
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
-            <div className="modal-body">
-{/*               
-              <p className="text-dark mb-2 small">Payment methods</p>
-              <div
-                className="btn-group btn-group-toggle mb-3"
-                data-toggle="buttons"
-              >
-                <label className={`btn osahan-radio btn-light btn-sm rounded ${cardStatus? 'active' : null}`}>
-                  <input type="radio" name="options" id="option1"  onClick={handleCard}/>{" "}
-                  <i className="mdi mdi-credit-card-outline"></i> Card
-                </label>
-                <label className={`btn osahan-radio btn-light btn-sm rounded ${codStatus? 'active' : null}`} >
-                  <input type="radio" name="options" id="option2" onClick={handleCod}/>{" "}
-                  <i className="mdi mdi-currency-usd"></i> COD
-                </label>
-                <label className={`btn osahan-radio btn-light btn-sm rounded ${paypalStatus? 'active' : null}`}>
-                  <input type="radio" name="options" id="option3" onClick={handlePaypal}/>{" "}
-                  <i className="fab fa-paypal"></i> Paypal
-                </label>
-              </div> */}
-
-              {/* {cardStatus ? 
-              (<>
-              <h6 className="mb-3">
-                My cards <span className="small">(2)</span>
-              </h6>
-              <div
-                className="btn-group btn-group-toggle osahan-card"
-                data-toggle="buttons"
-              >
-                <label className="btn osahan-radio osahan-card-pay btn-light btn-sm rounded mb-2 active w-100">
-                  <input type="radio" name="options" id="option1" checked />
-                  <div className="d-flex align-items-center card-detials small mb-3">
-                    <p className="small">
-                      <i className="mdi mdi-chip"></i>
-                    </p>
-                    <p className="ml-auto d-flex align-items-center">
-                      <span className="card-no mr-2">
-                        <i className="mdi mdi-circle"></i>{" "}
-                        <i className="mdi mdi-circle"></i>{" "}
-                        <i className="mdi mdi-circle"></i>{" "}
-                        <i className="mdi mdi-circle"></i>
-                      </span>
-                      <span className="small">1211</span>
-                    </p>
-                  </div>
-                  <h1 className="mb-0">Mastercard</h1>
-                  <p className="small mb-1">Platinum</p>
-                  <p className="text-right mb-0">
-                    <i className="fab fa-cc-mastercard text-warning"></i>
-                  </p>
-                </label>
-                <label className="btn osahan-radio osahan-card-pay btn-light btn-sm rounded mb-2 w-100">
-                  <input type="radio" name="options" id="option2" />
-                  <div className="d-flex align-items-center card-detials small mb-3">
-                    <p className="small">
-                      <i className="mdi mdi-chip"></i>
-                    </p>
-                    <p className="ml-auto d-flex align-items-center">
-                      <span className="card-no mr-2">
-                        <i className="mdi mdi-circle"></i>{" "}
-                        <i className="mdi mdi-circle"></i>{" "}
-                        <i className="mdi mdi-circle"></i>{" "}
-                        <i className="mdi mdi-circle"></i>
-                      </span>
-                      <span className="small">2277</span>
-                    </p>
-                  </div>
-                  <h1 className="mb-0">Visa Debit</h1>
-                  <p className="small mb-1">Plantinum</p>
-                  <p className="text-right mb-0">
-                    <i className="fab fa-cc-visa"></i>
-                  </p>
-                </label>
-              </div>
-              <form id="cardForm">
-              <TextField name="Phone" size="small" label="*Phone Number"/>
-              <TextField name="name" size="small" label="Full Name" className="ml-3"/>
-              <TextField name="card" size="small" label="Card Number" className="mt-4"/>
-              <TextField name="cvv" size="small" label="CVV Code" className="ml-3 mt-4"/>
-              </form>
-              </>): null } */}
-              
+            <div className="modal-body">              
               {codStatus ? 
               (
                 <>
@@ -388,16 +337,6 @@ const CheckoutModal = (props) => {
                 </>
               ): null           
               }
-              {/* {paypalStatus ? 
-              (
-                <>
-                 <form id="paypalForm">
-                  <TextField name="Phone" size="small" label="*Phone Number"/>
-                  <TextField name="name" size="small" label="Full Name" className="ml-3"/>
-                </form>
-                </>
-              ): null
-              } */}
             </div>
             <div className="modal-footer justify-content-start">
 
@@ -406,7 +345,7 @@ const CheckoutModal = (props) => {
                 Online payment (₹ {(Number(cartItems.metadata && cartItems.metadata.subTotal) + Number(tip)).toFixed(2)})
               </a>)
               : (<a onClick={codStatus ? formik.handleSubmit : null} className="btn btn-success btn-block text-white">
-              Confirm payment (₹ {(Number(cartItems.metadata && cartItems.metadata.subTotal) + Number(tip)).toFixed(2)})
+                Confirm payment (₹ {(Number(cartItems.metadata && cartItems.metadata.subTotal) + Number(tip)).toFixed(2)})
             </a>)}
             
             </div>

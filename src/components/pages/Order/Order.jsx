@@ -191,8 +191,10 @@ const Order = () => {
                         {item.order_status === 4 ? 'Delivered' : null}
                     </TableCell>
                     <TableCell>
-                      {item.payment_mode === 1 ? 'COD' : null}
+                      {item.payment_mode === 1 ? 'CASH' : null}
                       {item.payment_mode === 2 ? 'CARD' : null}
+                      {item.payment_mode === 3 ? 'UPI' : null}
+                      {item.payment_mode === 4 ? 'RAZORPAY' : null}
                     </TableCell>
                     <TableCell>
                       <p className={item.order_type === 2 ? 'text-danger' : null}>

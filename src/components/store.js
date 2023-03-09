@@ -61,4 +61,5 @@ const authTypeState = atom({
     key: 'authTypeState',
     default: 0
 })
+
 export {singleData, productData, categoryData, categorySelecter, isLoading, productEditDialog,productAddDialog, gstSelecter, tipStore, auth, authTypeState}

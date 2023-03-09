@@ -1,7 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import { getChartReport } from '../../../services/chart';
-import { Box, Tabs, Tab, TextField, Button } from '@mui/material';
+import { Box, Tabs, Tab, TextField, Button , Paper, MenuItem, MenuList,Divider, ListItemIcon, ListItemText, Typography} from '@mui/material';
 import { Chart } from "react-google-charts";
+import ContentCut from '@mui/icons-material/ContentCut';
+import ContentCopy from '@mui/icons-material/ContentCopy';
+import ContentPaste from '@mui/icons-material/ContentPaste';
+import Cloud from '@mui/icons-material/Cloud';
 import axios from 'axios';
 import url from '../../../config';
 import { auth_check } from '../../../auth';
@@ -56,18 +60,29 @@ const Dashboard = () => {
        })
        return mapData
   }
-  useEffect(()=> {
-      axios.get(`${url}/today-report`).then((res)=>{
-          setToday(prevState=> (
-            {
-              'total': res.data.total_sales,
-              'card': res.data.total_sales - res.data.cod,
-              'cod': res.data.cod
-            }
-          ))
-      })
-  },[])
+  useEffect(()=>{
+       axios.get(`${url}/today-report`).then((res)=>{
+           setToday(res.data);
+           console.log(res.data);
+       }) 
+  },[]);
+  // useEffect(()=> {
+  //     axios.get(`${url}/today-report`).then((res)=>{
+  //         setToday(prevState=> (
+  //           {
+  //             'total': res.data.total_sales,
+  //             'card': res.data.total_sales - res.data.cod,
+  //             'cod': res.data.cod
+  //           }
+  //         ))
+  //     })
+  // },[])
   useEffect(() => {
+      //  axios.get(`${url}/today-report`).then((response)=>{
+      //      response.data.zomato.filer((item)=>{
+      //            return item.payment_mode == 2
+      //      })
+      //  })
        auth_check.then((res)=>{
            if(res.data.user.type === 1 || res.data.user.type === 3){
                return true
@@ -119,8 +134,8 @@ const Dashboard = () => {
                    <table ref={pdfRef} className="m-2 p-2 table-bordered">
                    <thead>
                      <tr>
-                     {excelData[0] && Object.keys(excelData[0]).map((item)=>                       
-                          <th key={item}>{item}</th>                      
+                     {excelData[0] && Object.keys(excelData[0]).map((item,id)=>                       
+                          <th key={id}>{item}</th>                      
                      )}
                      </tr>
                    </thead>
@@ -128,9 +143,9 @@ const Dashboard = () => {
                       {excelData.map((item,id)=>
                           (
                            <tr key={id}>
-                              {Object.values(item).map((it)=>
+                              {Object.values(item).map((it,id)=>
                                 (                                 
-                                <td key={it}>{it}</td>
+                                <td key={id}>{it}</td>
                                 )
                               )}                             
                            </tr>)
@@ -201,6 +216,9 @@ const Dashboard = () => {
       document.getElementById('dp').style.display = 'none'
       setTitle(`${month_name[new Date().getMonth()]} Month report for ${new Date().getFullYear()}`)
       axios.get(`${url}/chart-this-month`).then((res)=>{
+         if(res.data.status === 203){
+
+         }
          setExcelData(properDataFormat(res.data.excelData))
          setExcelSecondSheet(res.data.data.map((it)=> ({'Day': it.day, 'Sales': it.total_sales})))
              setData(res.data.data)
@@ -314,52 +332,185 @@ const Dashboard = () => {
     return (
         <>
         <div className='container' style={{marginTop: '80px'}}> 
-        {/* <Calendar
-        date={new Date()}
-        onChange={handleSelect}
-        />   
-        <DateRangePicker
-        ranges={[selectionRange]}
-        onChange={handleSelect}
-      />     */}
-        <div className='row justify-content-center align-items-center' id="one">
-               <div className="bg-warning shadow-sm p-3 rounded mb-2 ml-2">
-                 <div className="d-flex align-items-center mb-2">
-                    <div>
-                       <p className="mb-0 bg-light rounded p-2 osahan-icon"><i className="mdi mdi-clock-outline"></i></p>
-                    </div>
-                   <div className="ml-3 text-white">
-                     <p className="mb-0 h6">Today Total Sales</p>
-                     <p className="font-weight-bold mb-0 h6">Rs {today.total == null ? 0 : today.total}</p>
-                   </div>
-                   </div>
-                </div>
+        <div className='row justify-content-center align-items-center mb-2' id="one">
+               
+        <Paper sx={{ width: 320, maxWidth: '100%' }} className="ml-2">
+      <MenuList>     
+        <MenuItem>
+          <ListItemIcon>
+            <Cloud fontSize="small" />
+          </ListItemIcon>
+          <ListItemText className='text-center'>Online Sales</ListItemText>
+        </MenuItem>
+        <Divider />
+        <MenuItem>
+          <ListItemIcon>
+          <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Cash</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+            {today.online_cash}
+          </Typography>
+        </MenuItem>
+        <MenuItem>
+          <ListItemIcon>
+          <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Card</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+          {today.online_card}
+          </Typography>
+        </MenuItem>
+        <MenuItem>
+          <ListItemIcon>
+            <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>UPI</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+          {today.online_upi}
+          </Typography>
+        </MenuItem>
+        <MenuItem>
+          <ListItemIcon>
+            <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>RAZORPAY</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+          {today.online_razor}
+          </Typography>
+        </MenuItem>
+        <Divider />
+        <MenuItem>
+          <ListItemIcon>
+            <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>TOTAL</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+          {Number(today.online_cash) + Number(today.online_card) + Number(today.online_upi) + Number(today.online_razor)}
+          </Typography>
+        </MenuItem>
+        
+      </MenuList>
+    </Paper>
 
-                <div className="bg-secondary shadow-sm p-3 rounded mb-2 ml-2">
-                 <div className="d-flex align-items-center mb-2">
-                    <div>
-                       <p className="mb-0 bg-light rounded p-2 osahan-icon"><i className="mdi mdi-clock-outline"></i></p>
-                    </div>
-                   <div className="ml-3 text-white">
-                     <p className="mb-0 h6">Today Card Collect</p>
-                     <p className="font-weight-bold mb-0 h6">Rs {today.card == null ? 0 : today.card}</p>
-                   </div>
-                   </div>
-                </div>
+    <Paper sx={{ width: 320, maxWidth: '100%' }} className="ml-2">
+      <MenuList>     
+        <MenuItem>
+          <ListItemIcon>
+            <Cloud fontSize="small" />
+          </ListItemIcon>
+          <ListItemText className='text-center'>Outlet Sales</ListItemText>
+        </MenuItem>
+        <Divider />
+        <MenuItem>
+          <ListItemIcon>
+          <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Cash</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+          {today.outlet_cash}
+          </Typography>
+        </MenuItem>
+        <MenuItem>
+          <ListItemIcon>
+          <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Card</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+          {today.outlet_card}
+          </Typography>
+        </MenuItem>
+        <MenuItem>
+          <ListItemIcon>
+            <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>UPI</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+          {today.outlet_upi}
+          </Typography>
+        </MenuItem>
+        <MenuItem>
+          <ListItemIcon>
+            <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>RAZORPAY</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+          {today.outlet_razor}
+          </Typography>
+        </MenuItem>
+        <Divider />
+        <MenuItem>
+          <ListItemIcon>
+            <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>TOTAL</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+          {Number(today.outlet_cash) + Number(today.outlet_card) + Number(today.outlet_upi) + Number(today.outlet_razor)}
+          </Typography>
+        </MenuItem>
+      </MenuList>
+    </Paper>
 
-                <div className="bg-info shadow-sm p-3 rounded mb-2 ml-2">
-                 <div className="d-flex align-items-center mb-2">
-                    <div>
-                       <p className="mb-0 bg-light rounded p-2 osahan-icon"><i className="mdi mdi-clock-outline"></i></p>
-                    </div>
-                   <div className="ml-3 text-white">
-                     <p className="mb-0 h6">Today COD Collect</p>
-                     <p className="font-weight-bold mb-0 h6">Rs {today.cod == null ? 0 : today.cod}</p>
-                   </div>
-                   </div>
-                </div>
+
+    <Paper sx={{ width: 320, maxWidth: '100%' }} className="ml-2">
+      <MenuList>     
+        <MenuItem>
+          <ListItemIcon>
+            <Cloud fontSize="small" />
+          </ListItemIcon>
+          <ListItemText className='text-center'>Zomato / Swiggy</ListItemText>
+        </MenuItem>
+        <Divider />
+        <MenuItem>
+          <ListItemIcon>
+          <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Cash</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+          {today.zomato_cash}
+          </Typography>
+        </MenuItem>
+        <MenuItem>
+          <ListItemIcon>
+          <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Card</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+          {today.zomato_card}
+          </Typography>
+        </MenuItem>
+        <MenuItem>
+          <ListItemIcon>
+            <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>UPI</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+          {today.zomato_upi}
+          </Typography>
+        </MenuItem>
+        <MenuItem>
+          <ListItemIcon>
+            <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>RAZORPAY</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+          {today.zomato_razor}
+          </Typography>
+        </MenuItem>
+        <Divider />
+        <MenuItem>
+          <ListItemIcon>
+            <ContentPaste fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>TOTAL</ListItemText>
+          <Typography variant="body2" color="text.secondary">
+          {Number(today.zomato_cash) + Number(today.zomato_card) + Number(today.zomato_upi) + Number(today.zomato_razor)}
+          </Typography>
+        </MenuItem>
+        
+      </MenuList>
+    </Paper>
              </div>
-
         <Box sx={{ width: '100%', bgcolor: 'background.paper' }} className="mb-3">
           <Tabs value={value} onChange={handleChange} centered>
             <Tab label="This Year" onClick={handleThisYear}/>
