@@ -16,6 +16,8 @@ import * as XLSX from 'xlsx';
 import FileSaver from 'file-saver';
 import jsPDF from 'jspdf';
 import { useRef } from 'react';
+import { isLoading } from '../../store';
+import { useRecoilState } from 'recoil';
 const Dashboard = () => {
    let dt = new Date()
   const [data, setData] = useState([]);
@@ -30,6 +32,7 @@ const Dashboard = () => {
   const [total, setTotal] = useState(0)
   const [excelData, setExcelData] = useState([])
   const [excelSecondSheet,setExcelSecondSheet] = useState([])
+  const [loading, setLoading] = useRecoilState(isLoading)
   const [excelTitle, setExcelTitle] = useState(`monthly-report-created-on-${dt.getDate()}-${(dt.getMonth())+1}-${dt.getFullYear()}`)
   const convertDate = (date) => {
      if(date){
@@ -66,23 +69,8 @@ const Dashboard = () => {
            console.log(res.data);
        }) 
   },[]);
-  // useEffect(()=> {
-  //     axios.get(`${url}/today-report`).then((res)=>{
-  //         setToday(prevState=> (
-  //           {
-  //             'total': res.data.total_sales,
-  //             'card': res.data.total_sales - res.data.cod,
-  //             'cod': res.data.cod
-  //           }
-  //         ))
-  //     })
-  // },[])
+  
   useEffect(() => {
-      //  axios.get(`${url}/today-report`).then((response)=>{
-      //      response.data.zomato.filer((item)=>{
-      //            return item.payment_mode == 2
-      //      })
-      //  })
        auth_check.then((res)=>{
            if(res.data.user.type === 1 || res.data.user.type === 3){
                return true
@@ -93,10 +81,12 @@ const Dashboard = () => {
        })
   },[])
       useEffect(() => {  
+         setLoading(true)
          document.getElementById('dp').style.display = 'none' 
           console.log(today)       
           setTitle(`Yearly report for ${new Date().getFullYear()}`)
           getChartReport().then((res)=> {
+            setLoading(false)
             console.log(res.data.data)
             setExcelData(properDataFormat(res.data.excelData))
             let prev_data = res.data.data.map((item)=> ({'Month': month_name[item.month - 1], 'Cost': item.total_sales}))           
@@ -158,10 +148,12 @@ const Dashboard = () => {
         
       //handle this year
       const handleThisYear = () => {  
+         setLoading(true)
          setExcelTitle(`monthly-report-created-on-${dt.getDate()}-${(dt.getMonth())+1}-${dt.getFullYear()}`) 
        document.getElementById('dp').style.display = 'none' 
        setTitle(`Yearly report for ${new Date().getFullYear()}`)
        getChartReport().then((res)=> {
+        setLoading(false)
          setExcelData(properDataFormat(res.data.excelData))
          let prev_data = res.data.data.map((item)=> ({'Month': month_name[item.month - 1], 'Cost': item.total_sales}))           
          setExcelSecondSheet(prev_data)
@@ -185,10 +177,12 @@ const Dashboard = () => {
      })
        }
       const handlePrevMonth = () => {
+        setLoading(true)
          setExcelTitle(`prev-month-report-created-on-${dt.getDate()}-${(dt.getMonth())+1}-${dt.getFullYear()}`) 
          document.getElementById('dp').style.display = 'none'
         setTitle(`${month_name[new Date().getMonth() - 1]} Month report for ${new Date().getFullYear()}`)
         axios.get(`${url}/chart-prev-month`).then((res)=>{
+          setLoading(false)
          setExcelData(properDataFormat(res.data.excelData))
          setExcelSecondSheet(res.data.data.map((it)=> ({'Day': it.day, 'Sales': it.total_sales})))
                setData(res.data.data)
@@ -212,10 +206,12 @@ const Dashboard = () => {
 
    //   get this month report   
      const handleThisMonth = () => {
+      setLoading(true)
       setExcelTitle(`this-month-report-created-on-${dt.getDate()}-${(dt.getMonth())+1}-${dt.getFullYear()}`) 
       document.getElementById('dp').style.display = 'none'
       setTitle(`${month_name[new Date().getMonth()]} Month report for ${new Date().getFullYear()}`)
       axios.get(`${url}/chart-this-month`).then((res)=>{
+        setLoading(false)
          if(res.data.status === 203){
 
          }
@@ -240,10 +236,12 @@ const Dashboard = () => {
       })
      }
      const handleWeek = () => {
+      setLoading(true)
       setExcelTitle(`weekly-report-created-on-${dt.getDate()}-${(dt.getMonth())+1}-${dt.getFullYear()}`) 
       document.getElementById('dp').style.display = 'none'
       setTitle(`Last 7 Days report for ${new Date().getFullYear()}`)
       axios.get(`${url}/last-week`).then((res)=>{
+        setLoading(false)
          console.log(res.data.data)
          setExcelData(properDataFormat(res.data.excelData))
          setExcelSecondSheet(res.data.data.map((it)=> ({'Day': it.day, 'Sales': it.total_sales})))
@@ -275,11 +273,13 @@ const Dashboard = () => {
      }
      //handle date range
    const handleDateRange = (update) => {   
+      setLoading(true)
       setExcelTitle(`range-wise-report-created-on-${dt.getDate()}-${(dt.getMonth())+1}-${dt.getFullYear()}`)  
       setDateRange(update);
       if(update[1] != null){
          setTitle(`Range Report`)
          axios.post(`${url}/search-report`, {'start': update[0], 'end': update[1]}).then((res)=> {
+            setLoading(false)
             setExcelData(properDataFormat(res.data.excelData))
             setExcelSecondSheet(res.data.data.map((it)=> ({'Day': it.day, 'Sales': it.total_sales})))
             console.log(res)
@@ -302,6 +302,8 @@ const Dashboard = () => {
             setdataDetail(arr_data)
             console.log(arr_data)
          })
+      }else{
+         setLoading(false)
       }
    }
 
