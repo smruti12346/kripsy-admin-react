@@ -6,7 +6,7 @@ import { useEffect } from "react";
 //import ThermalPrinterEncoder from "thermal-printer-encoder";
 const Invoice = (props, ref) => {
     useEffect(()=>{
-     
+       console.log("invoice1", props)
     },[])
     const date = new Date()
   return (
@@ -83,7 +83,7 @@ const Invoice = (props, ref) => {
                               </td>
                               <th className="per5 text-center">Rs {item.price}</th>
                               <td className="text-center">{item.quantity}</td>
-                              <td className="text-center">Rs {item.price * item.quantity}</td>
+                              <td className="text-center">Rs {(item.price * item.quantity).toFixed(2)}</td>
                             </tr>)
                             )}
                           </tbody>
@@ -92,19 +92,25 @@ const Invoice = (props, ref) => {
                               <th colSpan="3" className="text-right">
                                 Sub Total:
                               </th>
-                              <th className="text-center">Rs {props.content.total_cost}</th>
+                              <th className="text-center">Rs {(props.content.total).toFixed(2)}</th>
                             </tr>
                             <tr>
                               <th colSpan="3" className="text-right">
-                                5% GST:
+                                2.5% CGST:
                               </th>
-                              <th className="text-center">Rs {props.content.total_cost * 5/100}</th>
+                              <th className="text-center">Rs {((props.content.total * 2.5)/100).toFixed(2)}</th>
+                            </tr>
+                            <tr>
+                              <th colSpan="3" className="text-right">
+                                2.5% SGST:
+                              </th>
+                              <th className="text-center">Rs {((props.content.total * 2.5)/100).toFixed(2)}</th>
                             </tr>
                             <tr>
                               <th colspan="3" className="text-right">
                                 Total:
                               </th>
-                              <th className="text-center">Rs {parseFloat(props.content.total_cost) + parseFloat(props.content.total_cost * 5/100)}</th>
+                              <th className="text-center">Rs {props.content.total_cost}</th>
                             </tr>
                           </tfoot>
                         </table>
@@ -112,7 +118,7 @@ const Invoice = (props, ref) => {
                     </div>
                     <div className="invoice-footer mt25">
                       <p className="text-center">
-                        Generated on {`${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`}
+                        Generated on {`${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}`}
                       </p>
                     </div>
                   </div>
